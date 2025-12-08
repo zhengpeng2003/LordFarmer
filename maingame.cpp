@@ -1,7 +1,7 @@
 ﻿#include "maingame.h"
 #include "qpainter.h"
 #include "ui_maingame.h"
-
+// 1
 #include <QMouseEvent>
 #include <QCloseEvent>
 #include <QMessageBox>
