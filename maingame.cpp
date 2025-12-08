@@ -3,6 +3,8 @@
 #include "ui_maingame.h"
 
 #include <QMouseEvent>
+#include <QCloseEvent>
+#include <QMessageBox>
 
 Maingame::Maingame(QWidget *parent)
     : QMainWindow(parent)
@@ -982,6 +984,25 @@ void Maingame::mouseMoveEvent(QMouseEvent *event)
         UserPlayHand();
     }
 
+}
+
+void Maingame::closeEvent(QCloseEvent *event)
+{
+    const QMessageBox::StandardButton reply = QMessageBox::question(
+        this,
+        tr("退出游戏"),
+        tr("确认退出游戏？"),
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No);
+
+    if (reply == QMessageBox::Yes)
+    {
+        event->accept();
+    }
+    else
+    {
+        event->ignore();
+    }
 }
 void Maingame::OnLordDetermined(player* lordPlayer)
 {
