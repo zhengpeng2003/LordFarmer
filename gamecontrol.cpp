@@ -191,7 +191,7 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
 
     // 从玩家手牌中移除这些牌
     if (cards && !cards->isempty()) {
-        player->GetCards().remove(cards);
+        player->RemoveCards(cards);
     }
     qDebug() << "玩家剩余牌数:" << player->GetCards().GetCardtotal();
 

@@ -59,6 +59,14 @@ Cards player::GetCards()
     return _Cards;
 }
 
+void player::RemoveCards(Cards *cards)
+{
+    if (cards)
+    {
+        _Cards.remove(cards);
+    }
+}
+
 void player::ClearCards()
 {
     this->_Cards.clearcards();
