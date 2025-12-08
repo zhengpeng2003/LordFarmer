@@ -15,6 +15,7 @@
 #include <cards.h>
 #include <QLabel>
 #include <QTimer>
+#include <QCloseEvent>
 #include <anmationpixmap.h>
 #include <endpanel.h>
 #include <timecount.h>
@@ -85,6 +86,7 @@ public:
 protected:
     virtual void paintEvent(QPaintEvent *event)override;
     virtual void mouseMoveEvent(QMouseEvent *event)override;
+    void closeEvent(QCloseEvent *event) override;
 
 private:
     QPoint _Base_point;
