@@ -29,6 +29,8 @@ public:
     void StoreGetCards(Cards * cards);
     //获取当前牌
     Cards GetCards();
+    //移除指定牌组
+    void RemoveCards(Cards *cards);
     //清理牌
     void ClearCards();
     //出牌
