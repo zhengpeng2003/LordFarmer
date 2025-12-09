@@ -331,19 +331,30 @@ void Bgmcontrol::StopOtherBgm()
 
 void Bgmcontrol::GetlordBgm(int point, player::Sex sex, bool isfirst)
 {
-    Sound soundIndex;
+    // 兼容 1/2/3 分和叫、抢两种语境，确保不会因为未覆盖的下注值而静音
+    Sound soundIndex = Sound::NOORDER;
 
-    if (point == 0) {
-        // 不叫地主
+    if (point <= 0) {
+        // 不叫/不抢
         soundIndex = isfirst ? Sound::NOORDER : Sound::NOROB;
-    } else if (point == 1) {
-        // 叫地主
-        soundIndex = isfirst ? Sound::ORDER : Sound::ROB1;
-    } else if (point == 2) {
-        // 抢地主
-        soundIndex = Sound::ROB3;
+    } else if (isfirst) {
+        // 首家叫分（1/2/3 分统一用叫地主语音）
+        soundIndex = Sound::ORDER;
     } else {
-        return;
+        // 后手抢分：1 分用 ROB1，2/3 分都使用力度更大的 ROB3 语音
+        switch (point) {
+        case 1:
+            soundIndex = Sound::ROB1;
+            break;
+        case 2:
+        case 3:
+            soundIndex = Sound::ROB3;
+            break;
+        default:
+            // 非法下注值也兜底到 ROB3，避免静音
+            soundIndex = Sound::ROB3;
+            break;
+        }
     }
 
     playSoundBySex(sex, soundIndex, "抢地主音效");
