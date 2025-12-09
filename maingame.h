@@ -82,6 +82,8 @@ public:
     void Showanimation(PlayHand::HandType type);
     //成为地主换图片
     void OnLordDetermined(player* lordPlayer);
+    //清空当前玩家的选中状态
+    void ClearSelectedPanels();
     ~Maingame();
 protected:
     virtual void paintEvent(QPaintEvent *event)override;
@@ -131,6 +133,8 @@ private:
     AnmationPixmap *_MyAnmation;
     Timecount * _Timecount;
     Bgmcontrol * _Bgmcontrol;
+    gamecontrol::GameState _CurrentGameState = gamecontrol::PENDCARD;
+    bool _CanSelectCards = false;
 
 };
 #endif // MAINGAME_H
