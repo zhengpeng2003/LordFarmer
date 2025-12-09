@@ -74,15 +74,7 @@ void player::ClearCards()
 
 void player::PlayHand(Cards *cards)
 {
-    if(cards)
-    {
-    this->_Cards.remove(cards);
     emit notifyplayhand(this,cards);
-    }
-    else
-    {
-    emit notifyplayhand(this,cards);
-    }
 }
 
 void player::SetPendinfo(player *PendPlayer, Cards *PendCard)

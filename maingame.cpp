@@ -589,12 +589,7 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
         qDebug()<<"分数初始化";
 
         // 添加结束音效
-        if(player->Getwin()) {
-            _Bgmcontrol->StartEndBgm(); // 播放胜利音效
-        } else {
-            // 可以在这里添加失败音效
-            _Bgmcontrol->StopBgm(); // 停止背景音乐
-        }
+        _Bgmcontrol->StartEndBgm(player->Getwin());
 
         InitEndPanel(_Gamecontrol->GetUSer());
     }

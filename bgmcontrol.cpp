@@ -143,7 +143,7 @@ void Bgmcontrol::StopBgm()
     qDebug() << "停止背景音乐";
 }
 
-void Bgmcontrol::StartEndBgm()
+void Bgmcontrol::StartEndBgm(bool isWin)
 {
     // 先停止背景音乐
     StopBgm();
@@ -152,9 +152,9 @@ void Bgmcontrol::StartEndBgm()
 
     QMediaPlayer *endPlayer = _MPlayer[4]; // 结束音效播放器
 
-    // 这里可以根据游戏结果选择胜利或失败音效
-    // 暂时播放第一个结束音效
-    QString endPath = _Endbgm[0]; // MusicEx_Win.mp3
+    int index = isWin ? 0 : 1;
+    if (index < 0 || index >= _Endbgm.size()) return;
+    QString endPath = _Endbgm[index];
 
     endPlayer->setSource(QUrl(endPath));
     endPlayer->play();

@@ -71,7 +71,7 @@ public:
     void StartBgm();
     void StopBgm();
     //结束音乐播放
-    void StartEndBgm();
+    void StartEndBgm(bool isWin);
     //出牌的音乐播放
     void PlayeHandBgm(player::Sex sex,bool isfirst,Cards *cards);
     //不出牌音乐

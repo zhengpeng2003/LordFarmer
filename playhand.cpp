@@ -102,13 +102,13 @@ void PlayHand::judeHandType()
     }
     else if (isPlaneTwoPair()) {
         _Point = _Three_Card[0];
-        _Sheet = _Three_Card.size() * 3 + _Two_Card.size() * 2;
+        _Sheet = _Three_Card.size() * 5;
         _Type = Hand_Plane_Two_Pair;
 
     }
     else if (isPlaneTwoSingle()) {
         _Point = _Three_Card[0];
-        _Sheet = _Three_Card.size() * 3 + _One_Card.size();
+        _Sheet = _Three_Card.size() * 4;
         _Type = Hand_Plane_Two_Single;
 
     }
@@ -179,8 +179,9 @@ bool PlayHand::CanBeat(PlayHand other)
         return true;
     }
 
-    // 同类型牌比较点数
+    // 同类型牌比较点数（长度必须一致）
     if (this->_Type == other._Type) {
+        if (this->_Sheet != other._Sheet) return false;
         return this->_Point > other._Point;
     }
 
@@ -220,7 +221,8 @@ bool PlayHand::isTriplePair(){
 bool PlayHand::isPlane(){
     if (_Three_Card.size() >= 2 && _One_Card.size() == 0 &&
         _Two_Card.size() == 0 && _Four_Card.size() == 0) {
-        // 检查是否是连续的
+        // 三顺不能包含2和王
+        if (_Three_Card.back() >= Card::Card_2) return false;
         for (int i = 1; i < _Three_Card.size(); i++) {
             if (_Three_Card[i] != _Three_Card[i-1] + 1) {
                 return false;
@@ -232,8 +234,9 @@ bool PlayHand::isPlane(){
 }
 
 bool PlayHand::isPlaneTwoSingle(){
-    if (_Three_Card.size() >= 2 && _One_Card.size() >= _Three_Card.size() &&
+    if (_Three_Card.size() >= 2 && _One_Card.size() == _Three_Card.size() &&
         _Two_Card.size() == 0 && _Four_Card.size() == 0) {
+        if (_Three_Card.back() >= Card::Card_2) return false;
         for (int i = 1; i < _Three_Card.size(); i++) {
             if (_Three_Card[i] != _Three_Card[i-1] + 1) {
                 return false;
@@ -245,8 +248,9 @@ bool PlayHand::isPlaneTwoSingle(){
 }
 
 bool PlayHand::isPlaneTwoPair(){
-    if (_Three_Card.size() >= 2 && _Two_Card.size() >= _Three_Card.size() &&
+    if (_Three_Card.size() >= 2 && _Two_Card.size() == _Three_Card.size() &&
         _One_Card.size() == 0 && _Four_Card.size() == 0) {
+        if (_Three_Card.back() >= Card::Card_2) return false;
         for (int i = 1; i < _Three_Card.size(); i++) {
             if (_Three_Card[i] != _Three_Card[i-1] + 1) {
                 return false;
@@ -260,6 +264,7 @@ bool PlayHand::isPlaneTwoPair(){
 bool PlayHand::isSeqPair(){
     if (_Two_Card.size() >= 3 && _One_Card.size() == 0 &&
         _Three_Card.size() == 0 && _Four_Card.size() == 0) {
+        if (_Two_Card.back() >= Card::Card_2) return false;
         for (int i = 1; i < _Two_Card.size(); i++) {
             if (_Two_Card[i] != _Two_Card[i-1] + 1) {
                 return false;
@@ -273,6 +278,7 @@ bool PlayHand::isSeqPair(){
 bool PlayHand::isSeqSingle(){
     if (_One_Card.size() >= 5 && _Two_Card.size() == 0 &&
         _Three_Card.size() == 0 && _Four_Card.size() == 0) {
+        if (_One_Card.back() >= Card::Card_2) return false;
         for (int i = 1; i < _One_Card.size(); i++) {
             if (_One_Card[i] != _One_Card[i-1] + 1) {
                 return false;
