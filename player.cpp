@@ -230,6 +230,15 @@ bool player::GetIsfront()
     return _Isfront;
 }
 
+void player::ResetForNewGame()
+{
+    _Role = UN_KONWROLE;
+    _PendPlayer = nullptr;
+    _PendCard = nullptr;
+    _Win = false;
+    _Isfront = false;
+}
+
 void player::grablordbet(int bet)
 {
     emit notifygrablordbet(this,bet);

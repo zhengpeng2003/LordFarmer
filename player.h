@@ -59,6 +59,8 @@ public:
     void Setfront(bool Isfront);
     //获取卡牌正反面
     bool GetIsfront();
+    // 开始新一局时重置玩家状态
+    void ResetForNewGame();
     //获取性别
     Sex GetSex();
     //获取位置
