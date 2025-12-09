@@ -899,6 +899,8 @@ void Maingame::Showanimation(PlayHand::HandType type)
         _Bgmcontrol->OtherBgm(Bgmcontrol::OtherSound::BOMB);
         break;
     case(PlayHand::Hand_Plane):
+    case(PlayHand::Hand_Plane_Two_Single):
+    case(PlayHand::Hand_Plane_Two_Pair):
         _MyAnmation->ShowPlane();
         _MyAnmation->setFixedSize(800,75);
         _MyAnmation->move((width()-(_MyAnmation->width())/2)/2,200);

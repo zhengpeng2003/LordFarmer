@@ -71,6 +71,10 @@ Cards * gamecontrol::GetCurrentCards()
 void gamecontrol::SetAllCards()
 {
 
+    // 重新开局前清理旧牌堆和计数，避免累计上一局的数据
+    _AllCards->clearcards();
+    _Countcard = 0;
+
     for(int p=Card::Card_begin+1;p<Card::Card_SJ;p++)
     {
 
@@ -105,14 +109,25 @@ Cards* gamecontrol::TakeCards()
 
 void gamecontrol::RetCardDate()
 {
+    // 1. 牌堆和计数重置
     SetAllCards();
 
+    // 2. 清空玩家手牌与上一轮记录
     _Rightrobot->ClearCards();
     _Leftrobot->ClearCards();
     _UserPlayer->ClearCards();
-    //当前出牌者还有卡牌清空
-    _CurrentPlayer=nullptr;
-    _CurrentCards->clearcards();
+
+    _Rightrobot->ResetForNewGame();
+    _Leftrobot->ResetForNewGame();
+    _UserPlayer->ResetForNewGame();
+
+    // 3. 当前局状态清零，避免上一局信息泄漏到新局
+    _CurrentPlayer = nullptr;
+    _CurrentCards = nullptr;
+    _PlayHandCards = nullptr;
+    _PlayHandplayer = nullptr;
+    _Betrect.rest();
+    _Bet = 0;
 }
 
 player *gamecontrol::GetPendplayer()
