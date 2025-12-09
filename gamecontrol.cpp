@@ -181,6 +181,9 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
         _CurrentPlayer = player->GetNextPlayer();
         qDebug() << "轮到下一个玩家:" << _CurrentPlayer;
 
+        // 通知界面层刷新“要不起”表现（文字与音效）
+        emit S_gamePlayHand(player, cards);
+
         QTimer::singleShot(1000, this, [this]() {
             if (_CurrentPlayer) {
                 _CurrentPlayer->PreparePlayCard();
