@@ -31,8 +31,12 @@ Timecount::Timecount(QWidget *parent)
 
 void Timecount::Timestart()
 {
-    _Timer->start(1000);
+    // 重新开始计时时，先清理上一次的显示状态，避免残留的钟表图标闪现
+    _BgPix = QPixmap();
+    _Number = QPixmap();
+
     count = 15;
+    _Timer->start(1000);
 }
 
 void Timecount::Timeout()

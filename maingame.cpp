@@ -828,6 +828,10 @@ void Maingame::UserNoPlayer()
         return;
     }
 
+    // 轮次已经结束，必须先停止倒计时，避免后续阶段残留的时钟图标闪现
+    _Timecount->Timeout();
+    _Timecount->hide();
+
     // 安全检查：不能首家要不起
     if(_Gamecontrol->GetPendplayer() == nullptr)
     {
