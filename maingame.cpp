@@ -214,6 +214,8 @@ void Maingame::InitGroupbtn()
 }
 void Maingame::SatrtPend()
 {
+    _CanSelectCards = false;
+    ClearSelectedPanels();
     // 1. 立刻隐藏/清空上一局的所有出牌
     for(auto it = _Playercontexts.begin(); it != _Playercontexts.end(); ++it)
     {
@@ -345,9 +347,11 @@ void Maingame::InitMovepoint()
 
 void Maingame::SetCurrentGameStatue(gamecontrol::GameState state)
 {
+    _CurrentGameState = state;
     switch(state)
     {
     case gamecontrol::PENDCARD:
+        _CanSelectCards = false;
         ui->widget->Setbtngroupstate(MybuttonGroup::Null);
         SatrtPend();
         //开始游戏开始音乐
@@ -355,6 +359,8 @@ void Maingame::SetCurrentGameStatue(gamecontrol::GameState state)
         break;
 
     case  gamecontrol::GIVECARD://开始出牌
+        _CanSelectCards = false;
+        ClearSelectedPanels();
         //显示地主牌 把地主牌个地主
         for(int i=0;i<3;i++)
         {
@@ -367,6 +373,8 @@ void Maingame::SetCurrentGameStatue(gamecontrol::GameState state)
         break;
 
     case gamecontrol::GETLORD://叫地主
+        _CanSelectCards = false;
+        ClearSelectedPanels();
         _LordCards[0]->show();
         _LordCards[1]->show();
         _LordCards[2]->show();
@@ -546,6 +554,8 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
     switch (state)
     {
     case gamecontrol::USERGETLORD://抢地主
+        _CanSelectCards = false;
+        ClearSelectedPanels();
         if(player == _Gamecontrol->GetUSer())
         {
             _Gamecontrol->StartPrepareLord();//开始抢地主并且发送信号
@@ -553,6 +563,11 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
         break;
 
     case gamecontrol::USERPEND:
+        _CanSelectCards = (player == _Gamecontrol->GetUSer());
+        if(!_CanSelectCards)
+        {
+            ClearSelectedPanels();
+        }
         if(player == _Gamecontrol->GetUSer())//当玩家出牌时的2种情况
         {
 
@@ -632,6 +647,12 @@ void Maingame::Cardpanel(Qt::MouseButton event)
     // 1. 安全检查
     if (!_Gamecontrol) return;
 
+    // 选牌仅允许在出牌阶段且轮到用户
+    if (!_CanSelectCards || _CurrentGameState != gamecontrol::GIVECARD)
+    {
+        return;
+    }
+
     // 2. 判断是否是玩家
     if (_Gamecontrol->GetCurrentPlayer() == _Gamecontrol->GetLeftroot() ||
         _Gamecontrol->GetCurrentPlayer() == _Gamecontrol->GetRightroot()) {
@@ -659,6 +680,7 @@ void Maingame::Cardpanel(Qt::MouseButton event)
             _Bgmcontrol->OtherBgm(Bgmcontrol::OtherSound::SELECT_CARD);
         } else {
             _SelcetPanel.erase(it);
+            temp->setselect(false);
         }
     }
 }
@@ -786,7 +808,7 @@ void Maingame::UserPlayHand()
     _Gamecontrol->GetCurrentPlayer()->PlayHand(temp);
 
     // 在UserPlayHand()最后加：
-    _SelcetPanel.clear();          // 必须清空选中
+    ClearSelectedPanels();          // 必须清空选中
     PendCardpos(_Gamecontrol->GetUSer()); // 立即刷新手牌显示
 }
 
@@ -818,10 +840,7 @@ void Maingame::UserNoPlayer()
     qDebug() << "玩家选择要不起";
 
     // 清空所有选中的牌
-    for (CardPanel* panel : _SelcetPanel) {
-        panel->setselect(false);
-    }
-    _SelcetPanel.clear();
+    ClearSelectedPanels();
 
     // 创建一个空的Cards对象来表示"要不起"
     Cards* emptyCards = new Cards();  // 空的卡牌集合
@@ -830,13 +849,25 @@ void Maingame::UserNoPlayer()
     _Gamecontrol->GetCurrentPlayer()->PlayHand(emptyCards);
 
     // 再次确保清空选中容器
-    _SelcetPanel.clear();
+    ClearSelectedPanels();
 
     // 更新手牌显示
     PendCardpos(_Gamecontrol->GetUSer());
 
     qDebug() << "=== 要不起处理完成 ===";
     ui->widget->Setbtngroupstate(MybuttonGroup::Null);
+}
+
+void Maingame::ClearSelectedPanels()
+{
+    for (CardPanel* panel : _SelcetPanel)
+    {
+        if(panel)
+        {
+            panel->setselect(false);
+        }
+    }
+    _SelcetPanel.clear();
 }
 void Maingame::RePlayGame()
 {

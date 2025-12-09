@@ -170,9 +170,6 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
     qDebug() << "上一个出牌者:" << _PlayHandplayer;
     qDebug() << "牌数:" << (cards ? cards->GetCardtotal() : 0);
 
-    // 告诉主界面出的牌
-    emit S_gamePlayHand(player, cards);
-
     // 关键修复：正确处理"要不起"的情况
     if (!cards || cards->isempty()) {
         qDebug() << "玩家要不起";
@@ -202,12 +199,15 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
     _CurrentCards = cards;
     _CurrentPlayer = player;
 
-    emit S_PlayerPlayHand(_PlayHandplayer, _PlayHandCards);
-
-    // 从玩家手牌中移除这些牌
+    // 先从玩家手牌中移除这些牌，保证界面刷新时数量正确
     if (cards && !cards->isempty()) {
         player->RemoveCards(cards);
     }
+
+    emit S_PlayerPlayHand(_PlayHandplayer, _PlayHandCards);
+    // 告诉主界面出的牌（此时手牌已更新）
+    emit S_gamePlayHand(player, cards);
+
     qDebug() << "玩家剩余牌数:" << player->GetCards().GetCardtotal();
 
     // 倍数翻倍逻辑
