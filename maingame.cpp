@@ -719,7 +719,12 @@ void Maingame::InitEndPanel(player *player)
 
         // 清空上下文
         for(auto it=_Playercontexts.begin();it!=_Playercontexts.end();++it){
-            it.value()->_Last_Cards->clearcards();
+            if(it.value()->_Last_Cards){
+                it.value()->_Last_Cards->clearcards();
+            }
+            else{
+                it.value()->_Last_Cards = new Cards();
+            }
             it.value()->_NOCardlabel->hide();
             it.value()->_ROlelabel->hide();
             it.value()->Isfront=false;
