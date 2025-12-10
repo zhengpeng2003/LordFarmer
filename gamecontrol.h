@@ -9,6 +9,7 @@
 #include <user.h>
 #include <QRandomGenerator>
 #include <QDebug>
+#include <QVector>
 
 struct  Betrest
 {
@@ -26,6 +27,15 @@ struct  Betrest
     int Bet;
     player * player;
 
+};
+struct RoundResult
+{
+    int roundIndex = 0;
+    player* lordPlayer = nullptr;
+    int bet = 0;
+    int leftScore = 0;
+    int rightScore = 0;
+    int userScore = 0;
 };
 class gamecontrol :public QObject
 {
@@ -95,6 +105,7 @@ signals:
     // 播放结算结果
     void S_PlayResult(bool isWin);
 private:
+    void RecordRoundResult();
     robot * _Leftrobot=nullptr;
     robot * _Rightrobot=nullptr;
     user * _UserPlayer=nullptr;
@@ -106,6 +117,8 @@ private:
     int _Countcard;
     Betrest _Betrect;
     int _Bet=0;
+    int _RoundCounter = 0;
+    QVector<RoundResult> _HistoryRoundResults;
 };
 
 #endif // GAMECONTROL_H

@@ -2,7 +2,7 @@
 #include "maingame.h"
 #include "qdebug.h"
 
-gamecontrol::gamecontrol():_AllCards(new Cards()),_Countcard(0),_PlayHandCards(nullptr),_PlayHandplayer(nullptr)
+gamecontrol::gamecontrol():_AllCards(new Cards()),_Countcard(0),_PlayHandCards(nullptr),_PlayHandplayer(nullptr),_RoundCounter(0)
 {}
 
 void gamecontrol::InitPlayer()
@@ -267,6 +267,7 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
                 player->GetPrePlayer()->Setwin(true);
             }
         }
+        RecordRoundResult();
         const bool isUserWin = (player->GetRole() == _UserPlayer->GetRole());
         emit S_PlayResult(isUserWin);
         emit S_PlayerStateChange(player, USERWIN);
@@ -284,6 +285,40 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
             emit S_PlayerStateChange(_CurrentPlayer, USERPEND);
         }
     });
+}
+
+void gamecontrol::RecordRoundResult()
+{
+    if(!_Leftrobot || !_Rightrobot || !_UserPlayer)
+    {
+        return;
+    }
+
+    RoundResult result;
+    result.roundIndex = ++_RoundCounter;
+    result.bet = _Bet;
+    if(_Leftrobot->GetRole() == player::LORD)
+    {
+        result.lordPlayer = _Leftrobot;
+    }
+    else if(_Rightrobot->GetRole() == player::LORD)
+    {
+        result.lordPlayer = _Rightrobot;
+    }
+    else if(_UserPlayer->GetRole() == player::LORD)
+    {
+        result.lordPlayer = _UserPlayer;
+    }
+
+    result.leftScore = _Leftrobot->GetScore();
+    result.rightScore = _Rightrobot->GetScore();
+    result.userScore = _UserPlayer->GetScore();
+
+    _Leftrobot->AddToTotalScore(result.leftScore);
+    _Rightrobot->AddToTotalScore(result.rightScore);
+    _UserPlayer->AddToTotalScore(result.userScore);
+
+    _HistoryRoundResults.append(result);
 }
 
 void gamecontrol::ClearScore()
