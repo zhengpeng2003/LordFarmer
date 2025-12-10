@@ -282,6 +282,7 @@ void Maingame::InitGroupbtn()
     }
     //开始按钮
     connect(ui->widget,&MybuttonGroup::S_Start,this,[=](){
+        ui->widget->SetStartButtonVisible(false);
         SetCurrentGameStatue(gamecontrol::PENDCARD);
     });
     //玩家出牌
@@ -305,6 +306,7 @@ void Maingame::InitGroupbtn()
 }
 void Maingame::SatrtPend()
 {
+    ui->widget->SetStartButtonVisible(false);
     _CanSelectCards = false;
     ClearSelectedPanels();
     // 1. 立刻隐藏/清空上一局的所有出牌
@@ -467,6 +469,14 @@ void Maingame::SetCurrentGameStatue(gamecontrol::GameState state)
         }
         //把所有的标签隐藏 //设置角色
         _MyAnmation->hide();
+        for(auto ctx : _Playercontexts)
+        {
+            if(ctx && ctx->_NOCardlabel)
+            {
+                ctx->_NOCardlabel->clear();
+                ctx->_NOCardlabel->hide();
+            }
+        }
         // 停止发牌音效（发牌结束）
         _Bgmcontrol->StopOtherBgm();
         break;

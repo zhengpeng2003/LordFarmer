@@ -19,6 +19,7 @@ public:
     explicit MybuttonGroup(QWidget *parent = nullptr);
     void Initbutton();
     void Setbtngroupstate(MybuttonGroup::State state);
+    void SetStartButtonVisible(bool visible);
     ~MybuttonGroup();
 signals:
     void S_Point(int point);
