@@ -103,20 +103,15 @@ void Maingame::SaveLastGameScores()
     player* rightRobot = _Gamecontrol->GetRightroot();
     player* userPlayer = _Gamecontrol->GetUSer();
 
-    if(leftRobot)
-    {
-        _LastLeftRobotScore = leftRobot->GetScore();
-    }
+    const int leftScore = leftRobot ? leftRobot->GetScore() : 0;
+    const int rightScore = rightRobot ? rightRobot->GetScore() : 0;
+    const int userScore = userPlayer ? userPlayer->GetScore() : 0;
 
-    if(rightRobot)
-    {
-        _LastRightRobotScore = rightRobot->GetScore();
-    }
+    _LastLeftRobotScore = leftScore;
+    _LastRightRobotScore = rightScore;
+    _LastUserScore = userScore;
 
-    if(userPlayer)
-    {
-        _LastUserScore = userPlayer->GetScore();
-    }
+    ui->widget_showscore->InitScore(leftScore, rightScore, userScore);
 }
 
 void Maingame::ResetCountdown()
@@ -808,7 +803,6 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
         }
         SaveLastGameScores();
         ResetCountdown();      // ← 加
-        InitScore();//初始化分数
         // qDebug()<<"分数初始化";
 
         // 添加结束音效
