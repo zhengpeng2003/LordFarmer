@@ -7,7 +7,7 @@
 #include <QMessageBox>
 #include <QTimer>
 #include <algorithm>
-
+//2222
 Maingame::Maingame(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::Maingame)
@@ -469,7 +469,7 @@ void Maingame::SetCurrentGameStatue(gamecontrol::GameState state)
         break;
 
     case  gamecontrol::GIVECARD://开始出牌
-        ResetCountdown();
+    {    ResetCountdown();
         _CanSelectCards = false;
         ClearSelectedPanels();
         //显示地主牌 把地主牌个地主
@@ -498,9 +498,10 @@ void Maingame::SetCurrentGameStatue(gamecontrol::GameState state)
         // 停止发牌音效（发牌结束）
         _Bgmcontrol->StopOtherBgm();
         break;
+    }
 
     case gamecontrol::GETLORD://叫地主
-        ResetCountdown();
+    {    ResetCountdown();
         _CanSelectCards = false;
         ClearSelectedPanels();
         _MyAnmation->hide();
@@ -510,6 +511,7 @@ void Maingame::SetCurrentGameStatue(gamecontrol::GameState state)
         ui->widget->Setbtngroupstate(MybuttonGroup::Getloard);
         break;
     }
+}
 }
 
 void Maingame::PendCardplayer(player *player)
@@ -755,7 +757,7 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
                 ctx->Isfront = true;
             }
         }
-        for(player* p : _Players)
+        for(auto * p : _Players)
         {
             PendCardpos(p);
         }
