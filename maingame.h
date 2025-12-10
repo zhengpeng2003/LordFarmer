@@ -109,7 +109,7 @@ public:
     void ResetCountdown();
     void ShowPlayerInfoImage(player *player, const QPixmap &pixmap);
     QPoint CalculateLabelPosAbovePlayArea(_Playercontext* ctx, const QSize &labelSize, int extraOffset = 0) const;
-    QPoint CalculateRoleLabelPos(_Playercontext* ctx, const QSize &labelSize) const;
+    QPoint CalculateRoleLabelPos(_Playercontext* ctx, const QSize &labelSize) const;//角色标签位置
     QPoint CalculateCenteredPos(const QPoint &anchor, const QSize &labelSize) const;
     //清空当前玩家的选中状态
     void ClearSelectedPanels();

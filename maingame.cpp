@@ -220,18 +220,18 @@ void Maingame::InitGroupbtn()
     // 2. 玩家出牌的区域
     const QRect playHandRect[] =
         {
-            QRect(260, 150, 100, 100),                             // 左侧机器人
-            QRect(rect().right() - 360, 150, 100, 100),            // 右侧机器人
+            QRect(260, 210, 100, 100),                             // 左侧机器人
+            QRect(rect().right() - 360, 210, 100, 100),            // 右侧机器人
             QRect(150, rect().bottom() - 290, width() - 300, 100)  // 当前玩家
         };
 
     // 3. 玩家头像显示的位置
     const QPoint roleImgPos[] =
         {
-            QPoint(cardsRect[0].left() - _IMage_Card_Size.width(), cardsRect[0].center().y()),  // 左侧机器人头像
-            QPoint(cardsRect[1].right() + _IMage_Card_Size.width() / 4, cardsRect[1].center().y()), // 右侧机器人头像
-            QPoint(cardsRect[2].right() - _IMage_Card_Size.width() / 2,
-                   cardsRect[2].top() - _IMage_Card_Size.height() / 2) // 当前玩家头像
+            QPoint(cardsRect[0].left() - _IMage_Card_Size.width()+30, cardsRect[0].center().y()),  // 左侧机器人头像
+            QPoint(cardsRect[1].right() + _IMage_Card_Size.width() / 4+20, cardsRect[1].center().y()), // 右侧机器人头像
+            QPoint(cardsRect[2].right() - _IMage_Card_Size.width() / 2+70,
+                   cardsRect[2].top() - _IMage_Card_Size.height() / 2+80) // 当前玩家头像
         };
     // 4.信息提示位置
     const QPoint info[] =
@@ -254,12 +254,12 @@ void Maingame::InitGroupbtn()
 
         tempcontext->_NOCardlabel = new QLabel(this);
         tempcontext->_NOCardlabel->resize(160, 98);
-        tempcontext->_NOCardlabel->move(CalculateLabelPosAbovePlayArea(tempcontext, tempcontext->_NOCardlabel->size(), _IMage_Card_Size.height() / 4));
+        tempcontext->_NOCardlabel->move(playHandRect[i].x(),playHandRect[i].y());
         tempcontext->_NOCardlabel->setScaledContents(true);
         tempcontext->_NOCardlabel->hide();
 
         tempcontext->_ROlelabel = new QLabel(this);
-        tempcontext->_ROlelabel->move(CalculateRoleLabelPos(tempcontext, QSize(84, 120)));
+        tempcontext->_ROlelabel->move(roleImgPos[i].x(),roleImgPos[i].y());
         tempcontext->_ROlelabel->hide();
         tempcontext->_ROlelabel->resize(84, 120);
 
@@ -542,7 +542,7 @@ void Maingame::PendCardpos(player* player) {
                 {
                     int x = (Location.width() - list.size() * Playhandspace - 1 + tempPanel->width()) / 2 + i * Playhandspace;
                     int y = (Location.height() - tempPanel->height()) / 2;
-                    tempPanel->move(Location.left() + x, Location.top() + y);
+                    tempPanel->move(Location.left() + x-40, Location.top() + y);
                 }
                 else//竖直
                 {
