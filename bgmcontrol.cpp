@@ -155,6 +155,8 @@ void Bgmcontrol::playResultBgm(bool isWin)
     if (endPath.isEmpty()) return;
 
     QMediaPlayer *endPlayer = _MPlayer[4];
+    endPlayer->stop();
+    endPlayer->setPosition(0);
     endPlayer->setSource(QUrl(endPath));
     endPlayer->play();
 
@@ -399,11 +401,19 @@ void Bgmcontrol::playSoundBySex(player::Sex sex, Sound soundIndex, const QString
         }
 
         player->stop();
+        player->setPosition(0);
         player->setSource(QUrl(soundPath));
         player->play();
 
 
     } else {
-
+        qWarning() << "音效索引无效，尝试使用列表首个音效作为兜底" << index;
+        if(!soundList.isEmpty())
+        {
+            player->stop();
+            player->setPosition(0);
+            player->setSource(QUrl(soundList.first()));
+            player->play();
+        }
     }
 }
