@@ -33,6 +33,29 @@ class Maingame : public QMainWindow
 public:
     enum  cardAlign{Horizontal,
                      Vertical};
+    struct _Playercontext
+    {
+        //出牌位置
+        QRect _PlayerHandRect;
+        //卡牌位置
+        QRect _PLayerCardsRect;
+        //头像参考位置
+        QPoint _RoleImgPos;
+        //信息提示参考位置
+        QPoint _InfoPos;
+        //不出的标签
+        QLabel * _NOCardlabel;
+        //角色标签
+        QLabel * _ROlelabel;
+        //卡牌正反面
+        bool Isfront;
+        //卡牌
+        Cards * _Mycards;
+        //水平还是竖直
+        cardAlign _Align;
+        //存储最后一张出的牌
+        Cards *_Last_Cards=new Cards;
+    };
     Maingame(QWidget *parent = nullptr);
     //游戏控制类的连接
     void InitGamecontrol();
@@ -105,29 +128,7 @@ private:
     QVector<player*> _Players;//玩家
     QMap<Card,CardPanel*>_CardPenelMap;//卡牌的图片
     int _Movetime;
-    struct _Playercontext
-    {
-    //出牌位置
-        QRect _PlayerHandRect;
-    //卡牌位置
-        QRect _PLayerCardsRect;
-    //头像参考位置
-        QPoint _RoleImgPos;
-    //信息提示参考位置
-        QPoint _InfoPos;
-    //不出的标签
-        QLabel * _NOCardlabel;
-    //角色标签
-        QLabel * _ROlelabel;
-    //卡牌正反面
-        bool Isfront;
-    //卡牌
-        Cards * _Mycards;
-    //水平还是竖直
-        cardAlign _Align;
-    //存储最后一张出的牌
-        Cards *_Last_Cards=new Cards;
-    };
+
     QMap<player*,_Playercontext*> _Playercontexts;//卡牌在谁手上
     CardPanel *_PendCards;//发的牌
     CardPanel *_MoveCards;//移动牌
