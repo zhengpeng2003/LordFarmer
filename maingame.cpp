@@ -489,22 +489,32 @@ void Maingame::PendCardpos(player* player) {
     QRect rect = context->_PLayerCardsRect;
     QRect Panelrect;
     const int cardSpace = 20; //对手手里面的牌进行显示
+    if(context->_Align == Horizontal)
+    {
+        _PanelPositon.clear();
+    }
+
     for(int i = 0; i < sortedCards.size(); i++) {
         CardPanel* panel = _CardPenelMap.value(sortedCards[i]);
         if(!panel) continue;
 
         if(context->_Align == Horizontal) {
+            const int raiseOffset = 10;
             int leftX = rect.left() + (rect.width() - panel->width() - (sortedCards.size() - 1) * cardSpace) / 2;
-            int topY = rect.top() + (rect.height() - panel->height()) / 2;
+            int baseTop = rect.top() + (rect.height() - panel->height()) / 2;
 
-            _Mycardsrect = QRect(leftX, topY, i * cardSpace + panel->width(), panel->height());
+            _Mycardsrect = QRect(leftX, baseTop - raiseOffset,
+                                 (sortedCards.size() - 1) * cardSpace + panel->width(),
+                                 panel->height() + raiseOffset);
+
+            int topY = baseTop;
             if(panel->GetSelect())
             {
-                topY -= 10;
+                topY -= raiseOffset;
             }
             panel->move(leftX + i * cardSpace, topY);
             panel->setfront(true);//自己的牌要显示出来
-            QRect temp(leftX + i * cardSpace, topY, cardSpace, panel->height());
+            QRect temp(leftX + i * cardSpace, topY, panel->width(), panel->height());
             _PanelPositon.insert(panel, temp);
         }
         else {
@@ -843,7 +853,27 @@ void Maingame::UserPlayHand()
     //判断打出的牌是否为空
     if(_SelcetPanel.isEmpty())
     {
-        return;
+        bool isFreePlay = (_Gamecontrol->GetPendplayer() == nullptr ||
+                           _Gamecontrol->GetPendplayer() == _Gamecontrol->GetCurrentPlayer());
+        if(isFreePlay)
+        {
+            Cards userCards = _Gamecontrol->GetUSer()->GetCards();
+            QListcard list = userCards.Listcardssort();
+            if(!list.isEmpty())
+            {
+                CardPanel *firstPanel = _CardPenelMap.value(list.first(), nullptr);
+                if(firstPanel)
+                {
+                    firstPanel->setselect(true);
+                    _SelcetPanel.insert(firstPanel);
+                }
+            }
+        }
+
+        if(_SelcetPanel.isEmpty())
+        {
+            return;
+        }
     }
 
     qDebug() << "=== 玩家出牌验证 ===";
