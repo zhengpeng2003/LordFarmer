@@ -764,6 +764,9 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
     default:
     {
         // qDebug()<<"游戏结束";
+        // 机器人手牌亮牌
+        ShowRobotHands();
+
         // 所有牌正面展示，直至下一局开始前都保持亮牌
         for(auto ctx : _Playercontexts)
         {
@@ -890,6 +893,9 @@ void Maingame::InitEndPanel(player *player)
             anim->deleteLater(); // 必须释放
 
             ResetCountdown();
+
+            // 清理上一局亮出的机器人手牌
+            ClearRobotHands();
 
             // 完全重置游戏数据
             _Gamecontrol->RetCardDate();
@@ -1139,6 +1145,75 @@ CardPanel* Maingame::PanelFromPos(const QPoint &pos) const
     }
 
     return nullptr;
+}
+
+void Maingame::ShowRobotHands()
+{
+    _RobotRevealPanels.clear();
+
+    if(!_Gamecontrol)
+    {
+        return;
+    }
+
+    for(player* p : _Players)
+    {
+        if(!p || p == _Gamecontrol->GetUSer())
+        {
+            continue;
+        }
+
+        auto ctx = _Playercontexts.value(p, nullptr);
+        if(!ctx)
+        {
+            continue;
+        }
+
+        ctx->Isfront = true;
+        QListcard cards = p->GetCards().Listcardssort();
+        for(const Card &c : cards)
+        {
+            CardPanel* panel = _CardPenelMap.value(c, nullptr);
+            if(panel)
+            {
+                panel->setfront(true);
+                panel->raise();
+                panel->show();
+                _RobotRevealPanels.append(panel);
+            }
+        }
+
+        PendCardpos(p);
+    }
+}
+
+void Maingame::ClearRobotHands()
+{
+    for(CardPanel* panel : _RobotRevealPanels)
+    {
+        if(panel)
+        {
+            panel->setfront(false);
+            panel->hide();
+        }
+    }
+
+    if(_Gamecontrol)
+    {
+        for(player* p : _Players)
+        {
+            if(p && p != _Gamecontrol->GetUSer())
+            {
+                auto ctx = _Playercontexts.value(p, nullptr);
+                if(ctx)
+                {
+                    ctx->Isfront = false;
+                }
+            }
+        }
+    }
+
+    _RobotRevealPanels.clear();
 }
 void Maingame::RePlayGame()
 {

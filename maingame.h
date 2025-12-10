@@ -20,6 +20,7 @@
 #include <endpanel.h>
 #include <timecount.h>
 #include <bgmcontrol.h>
+#include <QList>
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class Maingame;
@@ -118,6 +119,8 @@ public:
     bool IsFreePlayStage() const;
     void HandleUserPlaySuccess();
     CardPanel* PanelFromPos(const QPoint &pos) const;
+    void ShowRobotHands();
+    void ClearRobotHands();
     ~Maingame();
 protected:
     virtual void paintEvent(QPaintEvent *event)override;
@@ -156,6 +159,7 @@ private:
     bool _IsUserFirstLordPlay = false;
     bool _IsDraggingSelect = false;
     int _InfoLabelSeq = 0;
+    QList<CardPanel*> _RobotRevealPanels;
 
 };
 #endif // MAINGAME_H

@@ -121,6 +121,11 @@ void gamecontrol::RetCardDate()
     _Leftrobot->ResetForNewGame();
     _UserPlayer->ResetForNewGame();
 
+    // 确保新局不继承上一局的出牌记录/要不起状态
+    _Rightrobot->SetPendinfo(nullptr, nullptr);
+    _Leftrobot->SetPendinfo(nullptr, nullptr);
+    _UserPlayer->SetPendinfo(nullptr, nullptr);
+
     // 3. 当前局状态清零，避免上一局信息泄漏到新局
     _CurrentPlayer = nullptr;
     _CurrentCards = nullptr;
