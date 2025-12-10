@@ -69,6 +69,14 @@ void MybuttonGroup::Setbtngroupstate(State state)
     ui->stackedWidget->setCurrentIndex(state);
 }
 
+void MybuttonGroup::SetStartButtonVisible(bool visible)
+{
+    if(ui && ui->pushButton_start)
+    {
+        ui->pushButton_start->setVisible(visible);
+    }
+}
+
 MybuttonGroup::~MybuttonGroup()
 {
     delete ui;

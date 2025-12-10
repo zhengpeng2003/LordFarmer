@@ -3,6 +3,7 @@
 #include "PlayHand.h"
 #include <QDebug>
 #include <QRandomGenerator>
+#include <QTimer>
 
 Bgmcontrol::Bgmcontrol(QWidget *parent)
     : QWidget(parent)
@@ -177,6 +178,7 @@ void Bgmcontrol::PlayeHandBgm(player::Sex sex, bool isfirst, Cards *cards)
 
     Sound soundIndex = Sound::_3;
     Card::cardpoint point = playHand.Getplayhandpoint();
+    bool shouldPlayDani = false;
 
     // 修复牌点到音效索引的映射
     switch (handType) {
@@ -211,37 +213,45 @@ void Bgmcontrol::PlayeHandBgm(player::Sex sex, bool isfirst, Cards *cards)
 
     case PlayHand::Hand_Triple_Single:
         soundIndex = Sound::SANDAIYI;  // 使用"三带一"特殊音效
+        shouldPlayDani = true;
         break;
 
     case PlayHand::Hand_Triple_Pair:
         soundIndex = Sound::SANDAIYIDUI;  // 使用"三带一对"特殊音效
+        shouldPlayDani = true;
         break;
 
     // 连牌系列
     case PlayHand::Hand_Seq_Sim:
-        soundIndex = Sound::DANI3;
+        soundIndex = Sound::SHUNZI;
+        shouldPlayDani = true;
         break;
 
     case PlayHand::Hand_Seq_Pair:
-        soundIndex = Sound::DANI3;
+        soundIndex = Sound::LIANDUI;
+        shouldPlayDani = true;
         break;
 
     case PlayHand::Hand_Plane:
-        soundIndex = Sound::DANI3;
+        soundIndex = Sound::FEIJI;
+        shouldPlayDani = true;
         break;
 
     case PlayHand::Hand_Plane_Two_Single:
     case PlayHand::Hand_Plane_Two_Pair:
-        soundIndex = Sound::DANI3;
+        soundIndex = Sound::FEIJI;
+        shouldPlayDani = true;
         break;
 
     // 炸弹系列
     case PlayHand::Hand_Bomb:
-        soundIndex = Sound::DANI3;
+        soundIndex = Sound::ZHADAN;
+        shouldPlayDani = true;
         break;
 
     case PlayHand::Hand_Bomb_Jokers:
-        soundIndex = Sound::DANI3;
+        soundIndex = Sound::WANGZHA;
+        shouldPlayDani = true;
         break;
 
     default:
@@ -258,17 +268,22 @@ void Bgmcontrol::PlayeHandBgm(player::Sex sex, bool isfirst, Cards *cards)
         break;
     }
 
-    // 播放音效
+    // 自由出牌：仅播放牌型音效
     playSoundBySex(sex, soundIndex, "出牌音效");
+
+    // 压牌阶段：在播放完牌型音效后追加"大你"特效
+    if(!isfirst && shouldPlayDani)
+    {
+        QTimer::singleShot(150, this, [=](){
+            playSoundBySex(sex, Sound::DANI3, "压牌特效音效");
+        });
+    }
 }
 
 void Bgmcontrol::NoPlayerHandBgm(player::Sex sex)
 {
-    // 播放"不要"音效，随机选择一个
-    int buyaoStart = static_cast<int>(Sound::BUYAO1);
-    int randomBuyao = buyaoStart + QRandomGenerator::global()->bounded(4); // BUYAO1-BUYAO4
-
-    playSoundBySex(sex, static_cast<Sound>(randomBuyao), "不要音效");
+    // 使用固定的"不要"音效，避免随机索引导致的遗漏
+    playSoundBySex(sex, Sound::BUYAO1, "不要音效");
 }
 
 void Bgmcontrol::OtherBgm(OtherSound type)
