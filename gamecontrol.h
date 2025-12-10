@@ -72,6 +72,13 @@ public:
     //开始下注
     void Onbet(player * player,int Bet);
 
+    // 是否处于用户地主首轮出牌的特殊状态
+    bool IsUserLandlordFirstTurnActive() const;
+    // 标记用户首轮地主出牌已结束
+    void MarkUserLandlordFirstTurnFinished();
+    // 用户首轮倒计时结束时自动出第一张牌
+    void AutoPlayFirstCardForUser();
+
     player * GetLeftroot();
     player * GetRightroot();
     player * GetUSer();
@@ -104,6 +111,9 @@ private:
     int _Countcard;
     Betrest _Betrect;
     int _Bet=0;
+
+    // 标记用户刚成为地主后的首轮出牌是否待处理
+    bool _UserLandlordFirstTurnActive = false;
 };
 
 #endif // GAMECONTROL_H
