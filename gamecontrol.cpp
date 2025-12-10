@@ -196,7 +196,6 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
                 emit S_PlayerStateChange(_CurrentPlayer, USERPEND);
             }
         });
-
         return;
     }
 
