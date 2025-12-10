@@ -189,7 +189,14 @@ Cards* Strategy::Getbigplayhand(PlayHand type)
                     bombPenalty += 6;
                 }
             }
-            return -base - bombPenalty + option->GetCardtotal();
+
+            // 出完这一手后的剩余牌形越整齐越好
+            Cards remain = m_cards;
+            remain.remove(option);
+            Strategy remainSt(m_player, remain);
+            int remainScore = remainSt.EvaluateCardValue(&remain);
+
+            return -base - bombPenalty + option->GetCardtotal() + remainScore / 10;
         };
 
         int bestScore = std::numeric_limits<int>::min();
