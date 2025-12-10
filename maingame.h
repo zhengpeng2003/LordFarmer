@@ -115,6 +115,8 @@ public:
     QPoint CalculateCenteredPos(const QPoint &anchor, const QSize &labelSize) const;
     //清空当前玩家的选中状态
     void ClearSelectedPanels();
+    bool IsFreePlayStage() const;
+    void HandleUserPlaySuccess();
     ~Maingame();
 protected:
     virtual void paintEvent(QPaintEvent *event)override;
@@ -148,6 +150,7 @@ private:
     Bgmcontrol * _Bgmcontrol;
     gamecontrol::GameState _CurrentGameState = gamecontrol::PENDCARD;
     bool _CanSelectCards = false;
+    bool _IsUserFirstLordPlay = false;
 
 };
 #endif // MAINGAME_H

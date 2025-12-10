@@ -101,6 +101,18 @@ void Maingame::ResetCountdown()
     _Timecount->hide();
 }
 
+bool Maingame::IsFreePlayStage() const
+{
+    if(!_Gamecontrol)
+    {
+        return false;
+    }
+
+    player* pendPlayer = _Gamecontrol->GetPendplayer();
+    player* currentPlayer = _Gamecontrol->GetCurrentPlayer();
+    return (pendPlayer == nullptr || pendPlayer == currentPlayer);
+}
+
 QPoint Maingame::CalculateCenteredPos(const QPoint &anchor, const QSize &labelSize) const
 {
     if(anchor.isNull())
@@ -430,6 +442,7 @@ void Maingame::SetCurrentGameStatue(gamecontrol::GameState state)
     case gamecontrol::PENDCARD:
         ResetCountdown();
         _CanSelectCards = false;
+        _IsUserFirstLordPlay = false;
         ui->widget->Setbtngroupstate(MybuttonGroup::Null);
         SatrtPend();
         //开始游戏开始音乐
@@ -853,8 +866,7 @@ void Maingame::UserPlayHand()
     //判断打出的牌是否为空
     if(_SelcetPanel.isEmpty())
     {
-        bool isFreePlay = (_Gamecontrol->GetPendplayer() == nullptr ||
-                           _Gamecontrol->GetPendplayer() == _Gamecontrol->GetCurrentPlayer());
+        bool isFreePlay = IsFreePlayStage();
         if(isFreePlay)
         {
             Cards userCards = _Gamecontrol->GetUSer()->GetCards();
@@ -877,8 +889,6 @@ void Maingame::UserPlayHand()
     }
 
     qDebug() << "=== 玩家出牌验证 ===";
-    //闹钟关闭 钟表隐藏
-    ResetCountdown();          // ← 加这一行
     //判断打出的牌合不合理
     Cards *temp = new Cards();
 
@@ -933,6 +943,8 @@ void Maingame::UserPlayHand()
 
     //触发出牌
     _Gamecontrol->GetCurrentPlayer()->PlayHand(temp);
+
+    HandleUserPlaySuccess();
 
     // 在UserPlayHand()最后加：
     ClearSelectedPanels();          // 必须清空选中
@@ -1012,6 +1024,16 @@ void Maingame::AutoPlayFirstCard()
     PendCardpos(_Gamecontrol->GetUSer());
 }
 
+void Maingame::HandleUserPlaySuccess()
+{
+    ResetCountdown();
+
+    if(_IsUserFirstLordPlay)
+    {
+        _IsUserFirstLordPlay = false;
+    }
+}
+
 void Maingame::ClearSelectedPanels()
 {
     for (CardPanel* panel : _SelcetPanel)
@@ -1042,12 +1064,16 @@ void Maingame::InitPlayerTimer()
             return;
         }
 
-        const bool isFreePlay = (_Gamecontrol->GetPendplayer() == nullptr ||
-                                 _Gamecontrol->GetPendplayer() == _Gamecontrol->GetCurrentPlayer());
+        const bool isFreePlay = IsFreePlayStage();
+        const bool isFirstLordTurn = _IsUserFirstLordPlay;
 
-        if(isFreePlay)
+        if(isFreePlay || isFirstLordTurn)
         {
             AutoPlayFirstCard();
+            if(isFirstLordTurn)
+            {
+                _IsUserFirstLordPlay = false;
+            }
         }
         else
         {
@@ -1211,6 +1237,8 @@ void Maingame::closeEvent(QCloseEvent *event)
 void Maingame::OnLordDetermined(player* lordPlayer)
 {
     qDebug() << "地主确定:" << lordPlayer;
+
+    _IsUserFirstLordPlay = (lordPlayer == _Gamecontrol->GetUSer());
 
     // 更新所有玩家的角色头像
     for(int i = 0; i < 3; i++)
