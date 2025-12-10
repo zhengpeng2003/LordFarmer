@@ -117,10 +117,13 @@ public:
     void ClearSelectedPanels();
     bool IsFreePlayStage() const;
     void HandleUserPlaySuccess();
+    CardPanel* PanelFromPos(const QPoint &pos) const;
     ~Maingame();
 protected:
     virtual void paintEvent(QPaintEvent *event)override;
     virtual void mouseMoveEvent(QMouseEvent *event)override;
+    virtual void mousePressEvent(QMouseEvent *event)override;
+    virtual void mouseReleaseEvent(QMouseEvent *event)override;
     void closeEvent(QCloseEvent *event) override;
 
 private:
@@ -151,6 +154,8 @@ private:
     gamecontrol::GameState _CurrentGameState = gamecontrol::PENDCARD;
     bool _CanSelectCards = false;
     bool _IsUserFirstLordPlay = false;
+    bool _IsDraggingSelect = false;
+    int _InfoLabelSeq = 0;
 
 };
 #endif // MAINGAME_H
