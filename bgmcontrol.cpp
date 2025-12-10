@@ -219,29 +219,29 @@ void Bgmcontrol::PlayeHandBgm(player::Sex sex, bool isfirst, Cards *cards)
 
     // 连牌系列
     case PlayHand::Hand_Seq_Sim:
-        soundIndex = Sound::SHUNZI;
+        soundIndex = Sound::DANI3;
         break;
 
     case PlayHand::Hand_Seq_Pair:
-        soundIndex = Sound::LIANDUI;
+        soundIndex = Sound::DANI3;
         break;
 
     case PlayHand::Hand_Plane:
-        soundIndex = Sound::FEIJI;
+        soundIndex = Sound::DANI3;
         break;
 
     case PlayHand::Hand_Plane_Two_Single:
     case PlayHand::Hand_Plane_Two_Pair:
-        soundIndex = Sound::FEIJI;
+        soundIndex = Sound::DANI3;
         break;
 
     // 炸弹系列
     case PlayHand::Hand_Bomb:
-        soundIndex = Sound::ZHADAN;
+        soundIndex = Sound::DANI3;
         break;
 
     case PlayHand::Hand_Bomb_Jokers:
-        soundIndex = Sound::WANGZHA;
+        soundIndex = Sound::DANI3;
         break;
 
     default:
