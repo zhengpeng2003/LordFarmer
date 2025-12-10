@@ -1105,14 +1105,24 @@ void Maingame::ClearSelectedPanels()
 
 CardPanel* Maingame::PanelFromPos(const QPoint &pos) const
 {
-    QList<CardPanel*> list = _PanelPositon.keys();
-    for(CardPanel *temp : list)
+    QList<CardPanel*> panels = _PanelPositon.keys();
+
+    // 由于卡牌存在重叠，需要按照屏幕从左到右的顺序反向命中，
+    // 以确保与视觉层级一致（右侧/后添加的牌位于最上层）。
+    std::sort(panels.begin(), panels.end(), [this](CardPanel *lhs, CardPanel *rhs)
     {
-        if(_PanelPositon.value(temp).contains(pos))
+        return _PanelPositon.value(lhs).left() < _PanelPositon.value(rhs).left();
+    });
+
+    for(auto it = panels.crbegin(); it != panels.crend(); ++it)
+    {
+        CardPanel *panel = *it;
+        if(_PanelPositon.value(panel).contains(pos))
         {
-            return temp;
+            return panel;
         }
     }
+
     return nullptr;
 }
 void Maingame::RePlayGame()
