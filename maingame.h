@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿//最终代码
+#pragma once
 #ifndef MAINGAME_H
 #define MAINGAME_H
 #include <QPropertyAnimation>
