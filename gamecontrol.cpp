@@ -263,7 +263,8 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
                 player->GetPrePlayer()->Setwin(true);
             }
         }
-        emit S_PlayResult(player->Getwin());
+        const bool isUserWin = (player->GetRole() == _UserPlayer->GetRole());
+        emit S_PlayResult(isUserWin);
         emit S_PlayerStateChange(player, USERWIN);
         emit S_StopCountdown();
         return;

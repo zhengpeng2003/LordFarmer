@@ -56,11 +56,6 @@ void CardPanel::setselect(bool is_select)
 {
     this->is_select=is_select;
 }
-bool CardPanel::getselect()
-{
-    return is_select;
-}
-
 void CardPanel::Click()
 {
     emit S_Cardsselect(Qt::LeftButton);

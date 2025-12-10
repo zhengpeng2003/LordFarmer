@@ -456,7 +456,7 @@ void Maingame::PendCardpos(player* player) {
             int topY = rect.top() + (rect.height() - panel->height()) / 2;
 
             _Mycardsrect = QRect(leftX, topY, i * cardSpace + panel->width(), panel->height());
-            if(panel->getselect())
+            if(panel->GetSelect())
             {
                 topY -= 10;
             }
