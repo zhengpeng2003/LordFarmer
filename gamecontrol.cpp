@@ -170,14 +170,14 @@ void gamecontrol::BecomeLord(player *player, int Bet)
 
 void gamecontrol::GamePlayhand(player *player, Cards *cards)
 {
-    qDebug() << "=== GamePlayhand ===";
-    qDebug() << "出牌玩家:" << player;
-    qDebug() << "上一个出牌者:" << _PlayHandplayer;
-    qDebug() << "牌数:" << (cards ? cards->GetCardtotal() : 0);
+    // qDebug() << "=== GamePlayhand ===";
+    // qDebug() << "出牌玩家:" << player;
+    // qDebug() << "上一个出牌者:" << _PlayHandplayer;
+    // qDebug() << "牌数:" << (cards ? cards->GetCardtotal() : 0);
 
     // 关键修复：正确处理"要不起"的情况
     if (!cards || cards->isempty()) {
-        qDebug() << "玩家要不起";
+        // qDebug() << "玩家要不起";
 
         // 重要修复：要不起时不更新出牌记录，保持上一个有效出牌者
         // 只有真正出牌时才更新出牌记录
@@ -185,7 +185,7 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
         emit S_StopCountdown();
         // 轮到下个人出牌
         _CurrentPlayer = player->GetNextPlayer();
-        qDebug() << "轮到下一个玩家:" << _CurrentPlayer;
+        // qDebug() << "轮到下一个玩家:" << _CurrentPlayer;
 
         // 通知界面层刷新“要不起”表现（文字与音效）
         emit S_gamePlayHand(player, cards);
@@ -200,7 +200,7 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
         return;
     }
 
-    qDebug() << "玩家正常出牌";
+    // qDebug() << "玩家正常出牌";
 
     // 重要修复：只有真正出牌（不是要不起）时才更新出牌记录
     _PlayHandplayer = player;
@@ -219,21 +219,21 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
 
     emit S_StopCountdown();
 
-    qDebug() << "玩家剩余牌数:" << player->GetCards().GetCardtotal();
+    // qDebug() << "玩家剩余牌数:" << player->GetCards().GetCardtotal();
 
     // 倍数翻倍逻辑
     PlayHand playHand(cards);
     PlayHand::HandType type = playHand.Getplayhandtype();
-    qDebug() << "牌型:" << type;
+    // qDebug() << "牌型:" << type;
 
     if(type == PlayHand::Hand_Bomb) {
         _Bet *= 2;
-        qDebug() << "炸弹！倍数变为:" << _Bet;
+        // qDebug() << "炸弹！倍数变为:" << _Bet;
     }
 
     // 检查游戏是否结束
     if(player->GetCards().isempty()) {
-        qDebug() << "游戏结束！";
+        // qDebug() << "游戏结束！";
         if(player->GetRole() == player::LORD)
         {
             player->SetScore(player->GetScore() + 2 * _Bet);
@@ -272,7 +272,7 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
 
     // 轮到下个人出牌
     _CurrentPlayer = player->GetNextPlayer();
-    qDebug() << "轮到下一个玩家:" << _CurrentPlayer;
+    // qDebug() << "轮到下一个玩家:" << _CurrentPlayer;
 
     QTimer::singleShot(1, this, [this]() {
         if (_CurrentPlayer) {

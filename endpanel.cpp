@@ -2,7 +2,7 @@
 EndPanel::EndPanel(player *player, QWidget *parent) :QWidget{parent},_Player(player)
 {
 
-    qDebug()<<player;
+    // qDebug()<<player;
     _Gameoverpix.load(":/images/gameover.png");
     this->resize(_Gameoverpix.size());
     QLabel * Fontpix=new QLabel(this);

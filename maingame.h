@@ -113,6 +113,8 @@ public:
     QPoint CalculateCenteredPos(const QPoint &anchor, const QSize &labelSize) const;
     //清空当前玩家的选中状态
     void ClearSelectedPanels();
+    // 地主超时自动出牌
+    void AutoPlayFirstCardAsLord();
     ~Maingame();
 protected:
     virtual void paintEvent(QPaintEvent *event)override;
