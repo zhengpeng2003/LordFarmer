@@ -95,13 +95,13 @@ void Bgmcontrol::InitMusicPlayer()
         }
     }
 
-    qDebug() << "音频初始化完成:";
-    qDebug() << "男性音效:" << _Manbgm.size();
-    qDebug() << "女性音效:" << _Womanbgm.size();
-    qDebug() << "背景音乐:" << _Bgm.size();
-    qDebug() << "胜利音效路径:" << _WinResult;
-    qDebug() << "失败音效路径:" << _LoseResult;
-    qDebug() << "其他音效:" << _Otherbgm.size();
+    // qDebug() << "音频初始化完成:";
+    // qDebug() << "男性音效:" << _Manbgm.size();
+    // qDebug() << "女性音效:" << _Womanbgm.size();
+    // qDebug() << "背景音乐:" << _Bgm.size();
+    // qDebug() << "胜利音效路径:" << _WinResult;
+    // qDebug() << "失败音效路径:" << _LoseResult;
+    // qDebug() << "其他音效:" << _Otherbgm.size();
 }
 
 void Bgmcontrol::StartBgm()
@@ -125,12 +125,12 @@ void Bgmcontrol::StartBgm()
             bgmPlayer->setSource(QUrl(nextBgmPath));
             bgmPlayer->play();
 
-            qDebug() << "切换到下一首背景音乐:" << nextBgmPath;
+            // qDebug() << "切换到下一首背景音乐:" << nextBgmPath;
         }
     });
 
     bgmPlayer->play();
-    qDebug() << "开始播放背景音乐:" << bgmPath;
+    // qDebug() << "开始播放背景音乐:" << bgmPath;
 }
 void Bgmcontrol::StopBgm()
 {
@@ -139,7 +139,7 @@ void Bgmcontrol::StopBgm()
 
     // 断开循环连接
     bgmPlayer->disconnect(); // 断开所有连接
-    qDebug() << "停止背景音乐";
+    // qDebug() << "停止背景音乐";
 }
 
 void Bgmcontrol::StartEndBgm(bool isWin)
@@ -160,7 +160,7 @@ void Bgmcontrol::playResultBgm(bool isWin)
     endPlayer->setSource(QUrl(endPath));
     endPlayer->play();
 
-    qDebug() << "播放结果音效:" << endPath;
+    // qDebug() << "播放结果音效:" << endPath;
 }
 
 void Bgmcontrol::PlayeHandBgm(player::Sex sex, bool isfirst, Cards *cards)
@@ -401,19 +401,19 @@ void Bgmcontrol::playSoundBySex(player::Sex sex, Sound soundIndex, const QString
     QList<QString> &soundList = (sex == player::Sex::MAN) ? _Manbgm : _Womanbgm;
 
     int index = static_cast<int>(soundIndex);
-    qDebug() << "尝试播放音效 - 类型:" << logType
+    // qDebug() << "尝试播放音效 - 类型:" << logType
              << "性别:" << (sex == player::Sex::MAN ? "男" : "女")
              << "索引:" << index
              << "音效列表大小:" << soundList.size();
 
     if (index >= 0 && index < soundList.size()) {
         QString soundPath = soundList[index];
-        qDebug() << "音效文件路径:" << soundPath;
+        // qDebug() << "音效文件路径:" << soundPath;
 
         // 检查文件是否存在
         QFile file(soundPath);
         if (file.exists()) {
-            qDebug() << "音效文件存在";
+            // qDebug() << "音效文件存在";
         } else {
             qWarning() << "音效文件不存在:" << soundPath;
         }

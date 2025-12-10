@@ -33,7 +33,7 @@ void AnmationPixmap::ShowSimsqe(PlayHand::HandType type)
     _Mx=0;
     QString name= type==PlayHand::Hand_Seq_Pair ?":/images/liandui.png":":/images/shunzi.png";
     _Mypix.load(name);
-    qDebug()<<name;
+    // qDebug()<<name;
     update();
     QTimer::singleShot(2000,this,&AnmationPixmap::hide);
 
