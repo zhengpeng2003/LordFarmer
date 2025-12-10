@@ -316,7 +316,14 @@ void Maingame::SatrtPend()
     for(auto it = _Playercontexts.begin(); it != _Playercontexts.end(); ++it)
     {
         auto ctx = it.value();
-        if(ctx->_Last_Cards && !ctx->_Last_Cards->isempty())
+
+        // 确保指针有效，避免上一局清空后留下空指针导致重新开局崩溃
+        if(!ctx->_Last_Cards)
+        {
+            ctx->_Last_Cards = new Cards();
+        }
+
+        if(!ctx->_Last_Cards->isempty())
         {
             QListcard list = ctx->_Last_Cards->Listcardssort();
             for(const Card& c : list)
