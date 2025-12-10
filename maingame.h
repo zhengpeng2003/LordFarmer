@@ -25,7 +25,7 @@ namespace Ui {
 class Maingame;
 }
 QT_END_NAMESPACE
-
+// 123456
 class Maingame : public QMainWindow
 {
     Q_OBJECT
