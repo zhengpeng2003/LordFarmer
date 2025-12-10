@@ -118,6 +118,7 @@ void Maingame::ShowPlayerInfoImage(player *player, const QPixmap &pixmap)
     const int posY = ctx->_PlayerHandRect.bottom() + offsetY;
 
     ctx->_NOCardlabel->move(posX, posY);
+    ctx->_NOCardlabel->raise();
     ctx->_NOCardlabel->show();
 }
 //初始化卡牌
@@ -214,6 +215,7 @@ void Maingame::InitGroupbtn()
         tempcontext->_NOCardlabel = new QLabel(this);
         tempcontext->_NOCardlabel->resize(160, 98);
         tempcontext->_NOCardlabel->move(info[i]);
+        tempcontext->_NOCardlabel->setScaledContents(true);
         tempcontext->_NOCardlabel->hide();
 
         tempcontext->_ROlelabel = new QLabel(this);
@@ -530,8 +532,19 @@ void Maingame::OndisPosePlayhand(player *player, Cards *cards)
     if(!cards || cards->isempty())
     {
         qDebug() << "玩家要不起";
-        _Playercontexts.find(player).value()->_NOCardlabel->setPixmap(QPixmap(":/images/pass.png"));
-        _Playercontexts.find(player).value()->_NOCardlabel->show();
+        QPixmap passPixmap(":/images/pass.png");
+        if(passPixmap.isNull())
+        {
+            qWarning() << "pass.png 资源加载失败";
+        }
+        else
+        {
+            auto noCardLabel = _Playercontexts.find(player).value()->_NOCardlabel;
+            noCardLabel->setPixmap(passPixmap);
+            noCardLabel->setFixedSize(passPixmap.size());
+            noCardLabel->raise();
+            noCardLabel->show();
+        }
 
         // 添加"不要"音效
         _Bgmcontrol->NoPlayerHandBgm(player->GetSex());
