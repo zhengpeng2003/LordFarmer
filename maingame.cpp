@@ -1327,14 +1327,7 @@ void Maingame::mousePressEvent(QMouseEvent *event)
         }
 
         _IsDraggingSelect = true;
-        _CurrtPanel = nullptr;
-
-        CardPanel *temp = PanelFromPos(event->pos());
-        if(temp)
-        {
-            temp->Click();
-            _CurrtPanel = temp;
-        }
+        _CurrtPanel = PanelFromPos(event->pos());
     }
     else if(event->button() == Qt::RightButton)
     {
