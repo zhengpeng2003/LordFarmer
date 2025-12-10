@@ -84,6 +84,37 @@ void Maingame::InitScore()
                                     _Players.at(1)->GetScore(),
                                     _Players.at(2)->GetScore());
 }
+
+void Maingame::ResetCountdown()
+{
+    if(!_Timecount)
+    {
+        return;
+    }
+
+    _Timecount->Timeout();
+    _Timecount->hide();
+}
+
+void Maingame::ShowPlayerInfoImage(player *player, const QPixmap &pixmap)
+{
+    if(!player || pixmap.isNull() || !_Playercontexts.contains(player))
+    {
+        return;
+    }
+
+    auto ctx = _Playercontexts[player];
+    ctx->_NOCardlabel->setPixmap(pixmap);
+    ctx->_NOCardlabel->setFixedSize(pixmap.size());
+
+    QPoint center = ctx->_PlayerHandRect.center();
+    const int offsetY = _IMage_Card_Size.height() / 2;
+    const int posX = center.x() - pixmap.width() / 2;
+    const int posY = ctx->_PlayerHandRect.bottom() + offsetY;
+
+    ctx->_NOCardlabel->move(posX, posY);
+    ctx->_NOCardlabel->show();
+}
 //初始化卡牌
 void Maingame::InitCardpanelMap()
 {
@@ -234,8 +265,7 @@ void Maingame::SatrtPend()
     }
 
     // 2. 关掉闹钟
-    _Timecount->Timeout();
-    _Timecount->hide();
+    ResetCountdown();
     // 开始循环播放发牌音效
     _Bgmcontrol->OtherBgm(Bgmcontrol::OtherSound::DISPATCH);
     //把所有卡片初始化
@@ -351,6 +381,7 @@ void Maingame::SetCurrentGameStatue(gamecontrol::GameState state)
     switch(state)
     {
     case gamecontrol::PENDCARD:
+        ResetCountdown();
         _CanSelectCards = false;
         ui->widget->Setbtngroupstate(MybuttonGroup::Null);
         SatrtPend();
@@ -359,6 +390,7 @@ void Maingame::SetCurrentGameStatue(gamecontrol::GameState state)
         break;
 
     case  gamecontrol::GIVECARD://开始出牌
+        ResetCountdown();
         _CanSelectCards = false;
         ClearSelectedPanels();
         //显示地主牌 把地主牌个地主
@@ -373,6 +405,7 @@ void Maingame::SetCurrentGameStatue(gamecontrol::GameState state)
         break;
 
     case gamecontrol::GETLORD://叫地主
+        ResetCountdown();
         _CanSelectCards = false;
         ClearSelectedPanels();
         _LordCards[0]->show();
@@ -598,8 +631,7 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
         _Playercontexts.find(player->GetNextPlayer()).value()->Isfront=true;
         PendCardpos(player->GetNextPlayer());
         PendCardpos(player->GetPrePlayer());
-        _Timecount->Timeout();      // ← 加
-        _Timecount->hide();
+        ResetCountdown();      // ← 加
         InitScore();//初始化分数
         qDebug()<<"分数初始化";
 
@@ -614,20 +646,21 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
 void Maingame::gamenotifyGetLoard(player *player, int Bet, bool first)
 {
     // 先显示动画
+    QPixmap statusPixmap;
     if(first)
     {
-        _Playercontexts[player]->_NOCardlabel->setPixmap(QPixmap(":/images/jiaodizhu.png"));
+        statusPixmap.load(":/images/jiaodizhu.png");
     }
     else if(!first && Bet > 0)
     {
-        _Playercontexts[player]->_NOCardlabel->setPixmap(QPixmap(":/images/qiangdizhu.png"));
+        statusPixmap.load(":/images/qiangdizhu.png");
     }
     else
     {
-        _Playercontexts[player]->_NOCardlabel->setPixmap(QPixmap(":/images/buqinag.png"));
+        statusPixmap.load(":/images/buqinag.png");
     }
 
-    _Playercontexts[player]->_NOCardlabel->show();
+    ShowPlayerInfoImage(player, statusPixmap);
 
     // 显示下注动画
     _MyAnmation->ShowBet(Bet);
@@ -691,22 +724,24 @@ void Maingame::InitEndPanel(player *player)
     E1->move((width()-E1->width())/2,-E1->height());
     E1->show();//先显示出来 动画效果更好
     QPropertyAnimation *anim = new QPropertyAnimation(E1, "pos", this);
-    anim->setDuration(1500);
-    anim->setStartValue(QPoint((width()-E1->width())/2,-E1->height()));
-    anim->setEndValue(QPoint((width()-E1->width())/2,(height()-E1->height())/2));
-    anim->setEasingCurve(QEasingCurve::OutBounce);
-    anim->start();
-    QTimer::singleShot(100, [E1]() {
-        E1->raise();
-        E1->activateWindow();
-    });
-    connect(E1,&EndPanel::S_Continue,this,[=](){
-        E1->hide();
-        E1->deleteLater();   // 必须释放
-        anim->deleteLater(); // 必须释放
+        anim->setDuration(1500);
+        anim->setStartValue(QPoint((width()-E1->width())/2,-E1->height()));
+        anim->setEndValue(QPoint((width()-E1->width())/2,(height()-E1->height())/2));
+        anim->setEasingCurve(QEasingCurve::OutBounce);
+        anim->start();
+        QTimer::singleShot(100, [E1]() {
+            E1->raise();
+            E1->activateWindow();
+        });
+        connect(E1,&EndPanel::S_Continue,this,[=](){
+            E1->hide();
+            E1->deleteLater();   // 必须释放
+            anim->deleteLater(); // 必须释放
 
-        // 完全重置游戏数据
-        _Gamecontrol->RetCardDate();
+            ResetCountdown();
+
+            // 完全重置游戏数据
+            _Gamecontrol->RetCardDate();
         _Gamecontrol->SetCurrentPlayer(_Gamecontrol->GetUSer());
         _Gamecontrol->SetCurrentCards(nullptr);
         _Gamecontrol->ClearScore();           // 清空分数
@@ -755,8 +790,7 @@ void Maingame::UserPlayHand()
 
     qDebug() << "=== 玩家出牌验证 ===";
     //闹钟关闭 钟表隐藏
-    _Timecount->Timeout();          // ← 加这一行
-    _Timecount->hide();
+    ResetCountdown();          // ← 加这一行
     //判断打出的牌合不合理
     Cards *temp = new Cards();
 
@@ -888,6 +922,7 @@ void Maingame::InitPlayerTimer()
     //时间到了
     connect(_Timecount,&Timecount::S_TimeOUt,this,[=](){
         UserNoPlayer();
+        ResetCountdown();
 
     });
     //音乐提示了 - 修改这里添加倒计时提醒音效
@@ -897,11 +932,17 @@ void Maingame::InitPlayerTimer()
             });
     //准备出牌触发信号
     connect(_Gamecontrol->GetUSer(),&player::notifyTime,this,[=](){
+        if(_CurrentGameState != gamecontrol::GIVECARD)
+        {
+            return;
+        }
+
         if(_Gamecontrol->GetUSer()==_Gamecontrol->GetCurrentPlayer())
         {
             qDebug()<<"触发信号";
             if(_Gamecontrol->GetUSer()==_Gamecontrol->GetPendplayer())
                 return ;
+            ResetCountdown();
             _Timecount->Timestart();
             _Timecount->show();
 
