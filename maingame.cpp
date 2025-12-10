@@ -92,6 +92,33 @@ void Maingame::InitScore()
                                     _Players.at(2)->GetScore());
 }
 
+void Maingame::SaveLastGameScores()
+{
+    if(!_Gamecontrol)
+    {
+        return;
+    }
+
+    player* leftRobot = _Gamecontrol->GetLeftroot();
+    player* rightRobot = _Gamecontrol->GetRightroot();
+    player* userPlayer = _Gamecontrol->GetUSer();
+
+    if(leftRobot)
+    {
+        _LastLeftRobotScore = leftRobot->GetScore();
+    }
+
+    if(rightRobot)
+    {
+        _LastRightRobotScore = rightRobot->GetScore();
+    }
+
+    if(userPlayer)
+    {
+        _LastUserScore = userPlayer->GetScore();
+    }
+}
+
 void Maingame::ResetCountdown()
 {
     if(!_Timecount)
@@ -779,6 +806,7 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
         {
             PendCardpos(p);
         }
+        SaveLastGameScores();
         ResetCountdown();      // ← 加
         InitScore();//初始化分数
         // qDebug()<<"分数初始化";

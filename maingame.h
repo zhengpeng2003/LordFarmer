@@ -130,6 +130,7 @@ protected:
     void closeEvent(QCloseEvent *event) override;
 
 private:
+    void SaveLastGameScores();
     QPoint _Base_point;
     QPixmap _IMage_Map;
     QPixmap _IMage_Cards;
@@ -160,6 +161,11 @@ private:
     bool _IsDraggingSelect = false;
     int _InfoLabelSeq = 0;
     QList<CardPanel*> _RobotRevealPanels;
+
+    // 记录上一局的最终分数
+    int _LastUserScore = 0;
+    int _LastLeftRobotScore = 0;
+    int _LastRightRobotScore = 0;
 
 };
 #endif // MAINGAME_H
