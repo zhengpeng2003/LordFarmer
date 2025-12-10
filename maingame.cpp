@@ -311,7 +311,22 @@ void Maingame::SatrtPend()
 {
     ui->widget->SetStartButtonVisible(false);
     _CanSelectCards = false;
+    _Movetime = 0;
     ClearSelectedPanels();
+
+    // 每局开始时重置抢分/动画控件到固定位置，避免上一局动画改变坐标
+    _MyAnmation->setFixedSize(160, 98);
+    _MyAnmation->move((width()-_MyAnmation->width())/2, (height()-_MyAnmation->height())/2-140);
+    _MyAnmation->hide();
+
+    // 恢复发牌动画控件的基准位置，确保每局都有完整发牌过程
+    if(_PendCards && _MoveCards)
+    {
+        _PendCards->move(_Base_point);
+        _MoveCards->move(_Base_point);
+        _PendCards->show();
+        _MoveCards->show();
+    }
     // 1. 立刻隐藏/清空上一局的所有出牌
     for(auto it = _Playercontexts.begin(); it != _Playercontexts.end(); ++it)
     {
