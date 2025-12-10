@@ -209,12 +209,14 @@ bool PlayHand::isTriple(){
 }
 
 bool PlayHand::isTripleSingle(){
-    return (_One_Card.size() == 1 && _Two_Card.size() == 0 &&
+    const int total = _One_Card.size() + 2 * _Two_Card.size() + 3 * _Three_Card.size() + 4 * _Four_Card.size();
+    return (total == 4 && _One_Card.size() == 1 && _Two_Card.size() == 0 &&
             _Three_Card.size() == 1 && _Four_Card.size() == 0);
 }
 
 bool PlayHand::isTriplePair(){
-    return (_One_Card.size() == 0 && _Two_Card.size() == 1 &&
+    const int total = _One_Card.size() + 2 * _Two_Card.size() + 3 * _Three_Card.size() + 4 * _Four_Card.size();
+    return (total == 5 && _One_Card.size() == 0 && _Two_Card.size() == 1 &&
             _Three_Card.size() == 1 && _Four_Card.size() == 0);
 }
 
@@ -234,8 +236,9 @@ bool PlayHand::isPlane(){
 }
 
 bool PlayHand::isPlaneTwoSingle(){
+    const int total = _One_Card.size() + 2 * _Two_Card.size() + 3 * _Three_Card.size() + 4 * _Four_Card.size();
     if (_Three_Card.size() >= 2 && _One_Card.size() == _Three_Card.size() &&
-        _Two_Card.size() == 0 && _Four_Card.size() == 0) {
+        _Two_Card.size() == 0 && _Four_Card.size() == 0 && total == _Three_Card.size() * 4) {
         if (_Three_Card.back() >= Card::Card_2) return false;
         for (int i = 1; i < _Three_Card.size(); i++) {
             if (_Three_Card[i] != _Three_Card[i-1] + 1) {
@@ -248,8 +251,9 @@ bool PlayHand::isPlaneTwoSingle(){
 }
 
 bool PlayHand::isPlaneTwoPair(){
+    const int total = _One_Card.size() + 2 * _Two_Card.size() + 3 * _Three_Card.size() + 4 * _Four_Card.size();
     if (_Three_Card.size() >= 2 && _Two_Card.size() == _Three_Card.size() &&
-        _One_Card.size() == 0 && _Four_Card.size() == 0) {
+        _One_Card.size() == 0 && _Four_Card.size() == 0 && total == _Three_Card.size() * 5) {
         if (_Three_Card.back() >= Card::Card_2) return false;
         for (int i = 1; i < _Three_Card.size(); i++) {
             if (_Three_Card[i] != _Three_Card[i-1] + 1) {
