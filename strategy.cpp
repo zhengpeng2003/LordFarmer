@@ -1,5 +1,6 @@
 ﻿#include "strategy.h"
 #include <QDebug>
+#include <limits>
 
 Strategy::Strategy(player *player, Cards &cards)
     : m_player(player), m_cards(cards)
@@ -26,31 +27,29 @@ Cards* Strategy::GetrootPlayhand()
 
 Cards* Strategy::FirstPlayhand()
 {
-    // 1. 先尝试出最小的单牌
-    for (int p = Card::Card_3; p < Card::Card_end; ++p) {
-        Card::cardpoint point = Card::cardpoint(p);
-        if (m_cards.GetpointCard(point) >= 1) {
-            Cards* single = Getsamepointcard(point, 1);
-            if (!single->isempty()) {
-                return single;
-            }
-            delete single;
-        }
-    }
+    auto selectBest = [this](QVector<Cards*> &options) -> Cards* {
+        if (options.isEmpty()) return nullptr;
 
-    // 2. 尝试出最小的对子
-    for (int p = Card::Card_3; p < Card::Card_end; ++p) {
-        Card::cardpoint point = Card::cardpoint(p);
-        if (m_cards.GetpointCard(point) >= 2) {
-            Cards* pair = Getsamepointcard(point, 2);
-            if (!pair->isempty()) {
-                return pair;
+        int bestScore = std::numeric_limits<int>::min();
+        int bestIdx = 0;
+        for (int i = 0; i < options.size(); ++i) {
+            int score = EvaluateCardValue(options[i]);
+            if (score > bestScore) {
+                bestScore = score;
+                bestIdx = i;
             }
-            delete pair;
         }
-    }
 
-    // 3. 尝试顺子
+        Cards* chosen = options[bestIdx];
+        for (int i = 0; i < options.size(); ++i) {
+            if (i != bestIdx) {
+                delete options[i];
+            }
+        }
+        return chosen;
+    };
+
+    // 1. 顺子/连对等长连牌优先，能快速减少手牌
     Info seqInfo;
     seqInfo.beat = false;
     seqInfo.begin = Card::Card_3;
@@ -58,87 +57,65 @@ Cards* Strategy::FirstPlayhand()
     seqInfo.number = 1;
     seqInfo.base = 5;
     QVector<Cards*> seqResults = FindHand_parisim(seqInfo);
-
     if (!seqResults.isEmpty()) {
-        int bestIdx = 0;
-        int bestLen = 0;
-        for (int i = 0; i < seqResults.size(); ++i) {
-            int len = seqResults[i]->GetCardtotal();
-            if (len > bestLen) {
-                bestLen = len;
-                bestIdx = i;
-            }
-        }
-        Cards* result = seqResults[bestIdx];
-        for (int i = 0; i < seqResults.size(); ++i) {
-            if (i != bestIdx) {
-                delete seqResults[i];
-            }
-        }
-        return result;
+        Cards* result = selectBest(seqResults);
+        if (result) return result;
     }
 
-    // 4. 尝试飞机
-    PlayHand planePH(PlayHand::Hand_Plane, Card::Card_begin, 0);
-    QVector<Cards*> planeCandidates = GetCardstype(planePH, false);
-    if (!planeCandidates.isEmpty()) {
-        Cards* result = planeCandidates[0];
-        for (int i = 1; i < planeCandidates.size(); ++i) {
-            delete planeCandidates[i];
-        }
-        return result;
-    }
-
-    // 5. 尝试三张
-    PlayHand triPH(PlayHand::Hand_Triple, Card::Card_begin, 0);
-    QVector<Cards*> tripleCandidates = GetCardstype(triPH, false);
-    if (!tripleCandidates.isEmpty()) {
-        Cards* result = tripleCandidates[0];
-        for (int i = 1; i < tripleCandidates.size(); ++i) {
-            delete tripleCandidates[i];
-        }
-        return result;
-    }
-
-    // 6. 尝试连对
     PlayHand seqPairPH(PlayHand::Hand_Seq_Pair, Card::Card_begin, 0);
     QVector<Cards*> seqPairCandidates = GetCardstype(seqPairPH, false);
     if (!seqPairCandidates.isEmpty()) {
-        Cards* result = seqPairCandidates[0];
-        for (int i = 1; i < seqPairCandidates.size(); ++i) {
-            delete seqPairCandidates[i];
-        }
-        return result;
+        Cards* result = selectBest(seqPairCandidates);
+        if (result) return result;
     }
 
-    // 7. 尝试对子（再次检查）
+    // 2. 飞机、三带类，尽量以组合方式出掉中小牌
+    QVector<Cards*> planeWithWings = FindHand_Plane12(Card::Card_3, 2);
+    if (planeWithWings.isEmpty()) {
+        planeWithWings = FindHand_Plane12(Card::Card_3, 1);
+    }
+    if (planeWithWings.isEmpty()) {
+        PlayHand planePH(PlayHand::Hand_Plane, Card::Card_begin, 0);
+        planeWithWings = GetCardstype(planePH, false);
+    }
+    if (!planeWithWings.isEmpty()) {
+        Cards* result = selectBest(planeWithWings);
+        if (result) return result;
+    }
+
+    QVector<Cards*> tripleWith = FindHand_Triple12(Card::Card_3, 2);
+    if (tripleWith.isEmpty()) tripleWith = FindHand_Triple12(Card::Card_3, 1);
+    if (!tripleWith.isEmpty()) {
+        Cards* result = selectBest(tripleWith);
+        if (result) return result;
+    }
+
+    PlayHand triPH(PlayHand::Hand_Triple, Card::Card_begin, 0);
+    QVector<Cards*> tripleCandidates = GetCardstype(triPH, false);
+    if (!tripleCandidates.isEmpty()) {
+        Cards* result = selectBest(tripleCandidates);
+        if (result) return result;
+    }
+
+    // 3. 对子优先于裸单，避免留下大量散牌
     QVector<Cards*> pairs = FindHand_Sing123(Card::Card_3, 2);
     if (!pairs.isEmpty()) {
-        Cards* result = pairs[0];
-        for (int i = 1; i < pairs.size(); ++i) {
-            delete pairs[i];
-        }
-        return result;
+        Cards* result = selectBest(pairs);
+        if (result) return result;
     }
 
-    // 8. 尝试单牌（再次检查）
+    // 4. 尝试小单牌
     QVector<Cards*> singles = FindHand_Sing123(Card::Card_3, 1);
     if (!singles.isEmpty()) {
-        Cards* result = singles[0];
-        for (int i = 1; i < singles.size(); ++i) {
-            delete singles[i];
-        }
-        return result;
+        Cards* result = selectBest(singles);
+        if (result) return result;
     }
 
-    // 9. 最后尝试炸弹
+    // 5. 最后才会考虑炸弹
     QVector<Cards*> bombs = Getsamecount(4);
     if (!bombs.isEmpty()) {
-        Cards* result = bombs[0];
-        for (int i = 1; i < bombs.size(); ++i) {
-            delete bombs[i];
-        }
-        return result;
+        Cards* result = selectBest(bombs);
+        if (result) return result;
     }
 
     return new Cards();
@@ -202,14 +179,36 @@ Cards* Strategy::Getbigplayhand(PlayHand type)
         player* nextplayer = m_player->GetNextPlayer();
         Cards* result = nullptr;
 
-        if (nextplayer && nextplayer->GetRole() != m_player->GetRole() && nextplayer->GetCards().GetCardtotal() <= 2) {
-            result = candidates.back();
-            for (int i = 0; i < candidates.size() - 1; ++i) {
-                delete candidates[i];
+        auto scoreBeat = [this](Cards* option) {
+            PlayHand ph(option);
+            // 越小越好，避免浪费大牌；拆炸弹、双王会有额外惩罚
+            int base = static_cast<int>(ph.Getplayhandpoint());
+            int bombPenalty = 0;
+            for (auto card : option->Listcardssort()) {
+                if (m_cards.GetpointCard(card.getcardpoint()) == 4) {
+                    bombPenalty += 6;
+                }
             }
-        } else {
-            result = candidates[0];
-            for (int i = 1; i < candidates.size(); ++i) {
+            return -base - bombPenalty + option->GetCardtotal();
+        };
+
+        int bestScore = std::numeric_limits<int>::min();
+        int bestIdx = 0;
+        for (int i = 0; i < candidates.size(); ++i) {
+            int score = scoreBeat(candidates[i]);
+            // 若下家要走牌，适当提高能直接压住的高分组合
+            if (nextplayer && nextplayer->GetRole() != m_player->GetRole() && nextplayer->GetCards().GetCardtotal() <= 2) {
+                score += candidates[i]->GetCardtotal();
+            }
+            if (score > bestScore) {
+                bestScore = score;
+                bestIdx = i;
+            }
+        }
+
+        result = candidates[bestIdx];
+        for (int i = 0; i < candidates.size(); ++i) {
+            if (i != bestIdx) {
                 delete candidates[i];
             }
         }
@@ -667,4 +666,47 @@ Cards Strategy::findSamePointCardsValue(Card::cardpoint point, int count)
         cs.clearcards();
     }
     return cs;
+}
+
+int Strategy::EvaluateCardValue(Cards *cards)
+{
+    if (!cards) return std::numeric_limits<int>::min();
+
+    PlayHand ph(cards);
+    int cardCount = cards->GetCardtotal();
+    int pointValue = static_cast<int>(ph.Getplayhandpoint());
+
+    // 避免轻易拆炸弹、双王，使用惩罚项
+    int structurePenalty = 0;
+    for (auto card : cards->Listcardssort()) {
+        if (m_cards.GetpointCard(card.getcardpoint()) == 4) {
+            structurePenalty += 6;
+        }
+        if (card.getcardpoint() == Card::Card_SJ || card.getcardpoint() == Card::Card_BJ) {
+            structurePenalty += 3;
+        }
+    }
+
+    // 越多张、点数越小越优先
+    return cardCount * 4 - pointValue - structurePenalty;
+}
+
+int Strategy::EvaluateHandStrength(const Cards &cards)
+{
+    Cards temp(cards);
+    Strategy tempSt(m_player, temp);
+    return tempSt.EvaluateCardValue(&temp);
+}
+
+bool Strategy::ShouldPassSmallCards()
+{
+    // 在没有有效组合时才会退让小牌
+    return m_cards.GetCardtotal() > 10;
+}
+
+bool Strategy::ShouldPressCard(const PlayHand &opponentHand)
+{
+    Q_UNUSED(opponentHand);
+    // 这里仅做轻量级策略，后续可扩展
+    return true;
 }

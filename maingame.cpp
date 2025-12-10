@@ -5,6 +5,7 @@
 #include <QMouseEvent>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <algorithm>
 
 Maingame::Maingame(QWidget *parent)
     : QMainWindow(parent)
@@ -374,6 +375,11 @@ void Maingame::PlayHandtimer(player * Player,int Movetime)
         }
 
         // 2. 创建显示面板
+        std::sort(lordCards.begin(), lordCards.end(), [](Card* a, Card* b) {
+            if (!a || !b) return a < b;
+            return a->getcardpoint() < b->getcardpoint();
+        });
+
         for (int i = 0; i < lordCards.size(); ++i) {
             Card* card = lordCards[i];
             CardPanel* lordPanel = new CardPanel(this);
