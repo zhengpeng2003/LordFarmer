@@ -101,6 +101,17 @@ void Maingame::ResetCountdown()
     _Timecount->hide();
 }
 
+QPoint Maingame::CalculateCenteredPos(const QPoint &anchor, const QSize &labelSize) const
+{
+    if(anchor.isNull())
+    {
+        return QPoint();
+    }
+
+    return QPoint(anchor.x() - labelSize.width() / 2,
+                  anchor.y() - labelSize.height() / 2);
+}
+
 QPoint Maingame::CalculateLabelPosAbovePlayArea(_Playercontext* ctx, const QSize &labelSize, int extraOffset) const
 {
     if(!ctx)
@@ -108,12 +119,29 @@ QPoint Maingame::CalculateLabelPosAbovePlayArea(_Playercontext* ctx, const QSize
         return QPoint();
     }
 
-    const QPoint center = ctx->_PlayerHandRect.center();
-    const int targetX = center.x() - labelSize.width() / 2;
     const int baseOffset = extraOffset >= 0 ? extraOffset : 0;
-    const int targetY = ctx->_PlayerHandRect.top() - labelSize.height() - baseOffset;
+    QPoint anchor = ctx->_InfoPos;
+    if(anchor.isNull())
+    {
+        anchor = ctx->_PlayerHandRect.center();
+        anchor.ry() -= baseOffset;
+    }
+    else
+    {
+        anchor.ry() -= baseOffset;
+    }
 
-    return QPoint(targetX, targetY);
+    return CalculateCenteredPos(anchor, labelSize);
+}
+
+QPoint Maingame::CalculateRoleLabelPos(_Playercontext* ctx, const QSize &labelSize) const
+{
+    if(!ctx)
+    {
+        return QPoint();
+    }
+
+    return CalculateCenteredPos(ctx->_RoleImgPos, labelSize);
 }
 
 void Maingame::ShowPlayerInfoImage(player *player, const QPixmap &pixmap)
@@ -202,16 +230,17 @@ void Maingame::InitGroupbtn()
     // 3. 玩家头像显示的位置
     const QPoint roleImgPos[] =
         {
-            QPoint(cardsRect[0].left() - 80, cardsRect[0].height() / 2 + 20),   // 左侧机器人头像
-            QPoint(cardsRect[1].right() + 10, cardsRect[1].height() / 2 + 20),  // 右侧机器人头像
-            QPoint(cardsRect[2].right() - 10, cardsRect[2].top() - 10)          // 当前玩家头像
+            QPoint(cardsRect[0].left() - _IMage_Card_Size.width(), cardsRect[0].center().y()),  // 左侧机器人头像
+            QPoint(cardsRect[1].right() + _IMage_Card_Size.width() / 4, cardsRect[1].center().y()), // 右侧机器人头像
+            QPoint(cardsRect[2].right() - _IMage_Card_Size.width() / 2,
+                   cardsRect[2].top() - _IMage_Card_Size.height() / 2) // 当前玩家头像
         };
     // 4.信息提示位置
     const QPoint info[] =
         {
-            QPoint(200,250),
-            QPoint(rect().right() - 360,250),
-            QPoint(400, rect().bottom() - 290)
+            QPoint(playHandRect[0].center().x(), playHandRect[0].top() - _IMage_Card_Size.height() / 2),
+            QPoint(playHandRect[1].center().x(), playHandRect[1].top() - _IMage_Card_Size.height() / 2),
+            QPoint(playHandRect[2].center().x(), playHandRect[2].top() - _IMage_Card_Size.height() / 2)
 
         };
     int index=_Players.indexOf(_Gamecontrol->GetUSer());
@@ -222,15 +251,17 @@ void Maingame::InitGroupbtn()
         tempcontext->_Align = (i == index) ? Horizontal : Vertical;
         tempcontext->_PLayerCardsRect = cardsRect[i];
         tempcontext->_PlayerHandRect = playHandRect[i];
+        tempcontext->_RoleImgPos = roleImgPos[i];
+        tempcontext->_InfoPos = info[i];
 
         tempcontext->_NOCardlabel = new QLabel(this);
         tempcontext->_NOCardlabel->resize(160, 98);
-        tempcontext->_NOCardlabel->move(info[i]);
+        tempcontext->_NOCardlabel->move(CalculateLabelPosAbovePlayArea(tempcontext, tempcontext->_NOCardlabel->size(), _IMage_Card_Size.height() / 4));
         tempcontext->_NOCardlabel->setScaledContents(true);
         tempcontext->_NOCardlabel->hide();
 
         tempcontext->_ROlelabel = new QLabel(this);
-        tempcontext->_ROlelabel->move(roleImgPos[i]);
+        tempcontext->_ROlelabel->move(CalculateRoleLabelPos(tempcontext, QSize(84, 120)));
         tempcontext->_ROlelabel->hide();
         tempcontext->_ROlelabel->resize(84, 120);
 
@@ -1123,7 +1154,7 @@ void Maingame::OnLordDetermined(player* lordPlayer)
         auto ctx = _Playercontexts.find(currentPlayer).value();
         ctx->_ROlelabel->setPixmap(RolePix);
         ctx->_ROlelabel->setFixedSize(RolePix.size());
-        const QPoint targetPos = CalculateLabelPosAbovePlayArea(ctx, RolePix.size(), _IMage_Card_Size.height() / 4);
+        const QPoint targetPos = CalculateRoleLabelPos(ctx, RolePix.size());
         ctx->_ROlelabel->move(targetPos);
         ctx->_ROlelabel->raise();
         ctx->_ROlelabel->show();
