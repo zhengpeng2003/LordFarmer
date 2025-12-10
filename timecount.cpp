@@ -19,7 +19,7 @@ Timecount::Timecount(QWidget *parent)
             //音乐效果
             emit S_Timemusic();
         }
-        else if(count <= 0)
+        if(count <= 0)
         {
             //跳过不出
             emit S_TimeOUt();

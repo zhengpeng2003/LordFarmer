@@ -22,7 +22,6 @@ public:
     void setcard(Card *card);
 
     void setselect(bool is_select);
-    bool getselect();
     void Click();
     void setfront(bool is_front);
     bool getfront();
