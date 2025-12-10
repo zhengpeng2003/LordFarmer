@@ -27,6 +27,16 @@ Cards* Strategy::GetrootPlayhand()
 
 Cards* Strategy::FirstPlayhand()
 {
+    auto validatePlay = [](Cards* cards) -> Cards* {
+        if (!cards) return nullptr;
+        PlayHand ph(cards);
+        if (ph.Getplayhandtype() == PlayHand::Hand_Unknown) {
+            delete cards;
+            return nullptr;
+        }
+        return cards;
+    };
+
     auto selectBest = [this](QVector<Cards*> &options) -> Cards* {
         if (options.isEmpty()) return nullptr;
 
@@ -58,14 +68,14 @@ Cards* Strategy::FirstPlayhand()
     seqInfo.base = 5;
     QVector<Cards*> seqResults = FindHand_parisim(seqInfo);
     if (!seqResults.isEmpty()) {
-        Cards* result = selectBest(seqResults);
+        Cards* result = validatePlay(selectBest(seqResults));
         if (result) return result;
     }
 
     PlayHand seqPairPH(PlayHand::Hand_Seq_Pair, Card::Card_begin, 0);
     QVector<Cards*> seqPairCandidates = GetCardstype(seqPairPH, false);
     if (!seqPairCandidates.isEmpty()) {
-        Cards* result = selectBest(seqPairCandidates);
+        Cards* result = validatePlay(selectBest(seqPairCandidates));
         if (result) return result;
     }
 
@@ -79,42 +89,42 @@ Cards* Strategy::FirstPlayhand()
         planeWithWings = GetCardstype(planePH, false);
     }
     if (!planeWithWings.isEmpty()) {
-        Cards* result = selectBest(planeWithWings);
+        Cards* result = validatePlay(selectBest(planeWithWings));
         if (result) return result;
     }
 
     QVector<Cards*> tripleWith = FindHand_Triple12(Card::Card_3, 2);
     if (tripleWith.isEmpty()) tripleWith = FindHand_Triple12(Card::Card_3, 1);
     if (!tripleWith.isEmpty()) {
-        Cards* result = selectBest(tripleWith);
+        Cards* result = validatePlay(selectBest(tripleWith));
         if (result) return result;
     }
 
     PlayHand triPH(PlayHand::Hand_Triple, Card::Card_begin, 0);
     QVector<Cards*> tripleCandidates = GetCardstype(triPH, false);
     if (!tripleCandidates.isEmpty()) {
-        Cards* result = selectBest(tripleCandidates);
+        Cards* result = validatePlay(selectBest(tripleCandidates));
         if (result) return result;
     }
 
     // 3. 对子优先于裸单，避免留下大量散牌
     QVector<Cards*> pairs = FindHand_Sing123(Card::Card_3, 2);
     if (!pairs.isEmpty()) {
-        Cards* result = selectBest(pairs);
+        Cards* result = validatePlay(selectBest(pairs));
         if (result) return result;
     }
 
     // 4. 尝试小单牌
     QVector<Cards*> singles = FindHand_Sing123(Card::Card_3, 1);
     if (!singles.isEmpty()) {
-        Cards* result = selectBest(singles);
+        Cards* result = validatePlay(selectBest(singles));
         if (result) return result;
     }
 
     // 5. 最后才会考虑炸弹
     QVector<Cards*> bombs = Getsamecount(4);
     if (!bombs.isEmpty()) {
-        Cards* result = selectBest(bombs);
+        Cards* result = validatePlay(selectBest(bombs));
         if (result) return result;
     }
 
@@ -262,7 +272,12 @@ Cards* Strategy::Getbigplayhand(PlayHand type)
                 delete candidates[i];
             }
         }
-        return result;
+        PlayHand validate(result);
+        if (validate.Getplayhandtype() != PlayHand::Hand_Unknown) {
+            return result;
+        }
+        delete result;
+        return new Cards();
     }
 
     QVector<Cards*> bombs2 = Getsamecount(4);
@@ -418,6 +433,14 @@ QVector<Cards*> Strategy::GetCardstype(PlayHand playhand, bool beat)
         }
     }
 
+    for (int i = result.size() - 1; i >= 0; --i) {
+        PlayHand candidateType(result[i]);
+        if (candidateType.Getplayhandtype() != t) {
+            delete result[i];
+            result.remove(i);
+        }
+    }
+
     return result;
 }
 
@@ -469,32 +492,30 @@ QVector<Cards*> Strategy::FindHand_Triple12(Card::cardpoint beginPoint, int coun
 
         Cards remain = m_cards;
         remain.remove(three);
+        Strategy remainStrategy(m_player, remain);
 
-        QVector<Cards*> attaches;
-        for (int q = Card::Card_3; q < Card::Card_end && attaches.size() < count; ++q) {
-            Card::cardpoint attachPoint = Card::cardpoint(q);
-            if (remain.GetpointCard(attachPoint) >= count) {
-                Cards* att = Getsamepointcard(attachPoint, count);
-                if (!att->isempty()) {
-                    attaches.append(att);
-                } else {
-                    delete att;
-                }
+        QVector<Cards*> attaches = remainStrategy.FindHand_Sing123(Card::Card_3, count);
+        Cards* attach = nullptr;
+        for (auto a : attaches) {
+            if (!a->isempty()) {
+                attach = a;
+                break;
             }
         }
 
-        if (attaches.size() >= count) {
-            for (int i = 0; i < count; ++i) {
-                for (auto card : attaches[i]->Listcardssort()) {
-                    three->add(card);
-                }
+        if (attach) {
+            for (auto card : attach->Listcardssort()) {
+                three->add(card);
             }
             result.append(three);
-            for (auto a : attaches) delete a;
         } else {
             delete three;
-            for (auto a : attaches) delete a;
         }
+
+        for (auto a : attaches) {
+            if (a != attach) delete a;
+        }
+        if (attach) delete attach;
     }
     return result;
 }
@@ -521,22 +542,36 @@ QVector<Cards*> Strategy::FindHand_Plane12(Card::cardpoint beginPoint, int attac
         for (auto card : t1->Listcardssort()) plane->add(card);
         for (auto card : t2->Listcardssort()) plane->add(card);
 
+        bool validAttach = true;
+
         if (attachCount > 0) {
             Cards remain = m_cards;
             remain.remove(plane);
 
-            QVector<Cards*> attaches = FindHand_Sing123(Card::Card_3, attachCount);
-            if (attaches.size() >= attachCount) {
-                for (int i = 0; i < attachCount; ++i) {
-                    for (auto card : attaches[i]->Listcardssort()) {
-                        plane->add(card);
+            Strategy remainStrategy(m_player, remain);
+            QVector<Cards*> attaches = remainStrategy.FindHand_Sing123(Card::Card_3, attachCount);
+            const int neededAttach = 2; // 当前仅支持2连飞机
+
+            if (attaches.size() >= neededAttach) {
+                for (int i = 0; i < neededAttach; ++i) {
+                    if (!attaches[i]->isempty()) {
+                        for (auto card : attaches[i]->Listcardssort()) {
+                            plane->add(card);
+                        }
                     }
                 }
+            } else {
+                validAttach = false;
             }
+
             for (auto a : attaches) delete a;
         }
 
-        result.append(plane);
+        if (validAttach) {
+            result.append(plane);
+        } else {
+            delete plane;
+        }
         delete t1;
         delete t2;
     }
