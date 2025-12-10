@@ -128,14 +128,38 @@ bool Strategy::IsPlayHand(PlayHand type)
 
     if (!preplayer || !preCards) return false;
 
-    if (preplayer->GetRole() != m_player->GetRole()) {
-        QVector<Cards*> list = GetCardstype(type, true);
-        bool ret = !list.isEmpty();
+    const bool sameRole = (preplayer->GetRole() == m_player->GetRole());
+    QVector<Cards*> list = GetCardstype(type, true);
+    const bool hasOption = !list.isEmpty();
+
+    if (!hasOption) {
         for (auto p : list) delete p;
-        return ret;
-    } else {
-        return m_player->GetCards().GetCardtotal() > 10;
+        return false;
     }
+
+    if (!sameRole) {
+        for (auto p : list) delete p;
+        return true;
+    }
+
+    bool canFinish = false;
+    bool hasPowerCombo = false;
+    for (auto option : list) {
+        if (option->GetCardtotal() == m_cards.GetCardtotal()) {
+            canFinish = true;
+        }
+        PlayHand optionType(option);
+        if (optionType.Getplayhandtype() == PlayHand::Hand_Bomb) {
+            hasPowerCombo = true;
+        }
+    }
+
+    const bool lowHand = m_cards.GetCardtotal() <= 5;
+    const bool teammateIsCritical = preplayer->GetCards().GetCardtotal() <= 2;
+
+    for (auto p : list) delete p;
+
+    return canFinish || lowHand || teammateIsCritical || hasPowerCombo;
 }
 
 Cards* Strategy::Getbigplayhand(PlayHand type)
@@ -143,7 +167,9 @@ Cards* Strategy::Getbigplayhand(PlayHand type)
     player* preplayer = m_player ? m_player->GetPendPlayer() : nullptr;
     if (!preplayer) return new Cards();
 
-    if (preplayer->GetRole() != m_player->GetRole() && preplayer->GetCards().GetCardtotal() <= 3) {
+    const bool sameRole = (preplayer->GetRole() == m_player->GetRole());
+
+    if (!sameRole && preplayer->GetCards().GetCardtotal() <= 3) {
         QVector<Cards*> bombs = Getsamecount(4);
         for (auto b : bombs) {
             PlayHand bph(b);
@@ -179,7 +205,7 @@ Cards* Strategy::Getbigplayhand(PlayHand type)
         player* nextplayer = m_player->GetNextPlayer();
         Cards* result = nullptr;
 
-        auto scoreBeat = [this](Cards* option) {
+        auto scoreBeat = [this, sameRole](Cards* option) {
             PlayHand ph(option);
             // 越小越好，避免浪费大牌；拆炸弹、双王会有额外惩罚
             int base = static_cast<int>(ph.Getplayhandpoint());
@@ -196,7 +222,10 @@ Cards* Strategy::Getbigplayhand(PlayHand type)
             Strategy remainSt(m_player, remain);
             int remainScore = remainSt.EvaluateCardValue(&remain);
 
-            return -base - bombPenalty + option->GetCardtotal() + remainScore / 10;
+            int partnerPenalty = sameRole ? 2 : 0;
+            int aggressionBonus = sameRole ? 0 : 2;
+
+            return -base - bombPenalty - partnerPenalty + aggressionBonus + option->GetCardtotal() + remainScore / 10;
         };
 
         int bestScore = std::numeric_limits<int>::min();
