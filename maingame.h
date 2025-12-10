@@ -85,6 +85,8 @@ public:
     void ResetCountdown();
     void ShowPlayerInfoImage(player *player, const QPixmap &pixmap);
     QPoint CalculateLabelPosAbovePlayArea(_Playercontext* ctx, const QSize &labelSize, int extraOffset = 0) const;
+    QPoint CalculateRoleLabelPos(_Playercontext* ctx, const QSize &labelSize) const;
+    QPoint CalculateCenteredPos(const QPoint &anchor, const QSize &labelSize) const;
     //清空当前玩家的选中状态
     void ClearSelectedPanels();
     ~Maingame();
@@ -109,6 +111,10 @@ private:
         QRect _PlayerHandRect;
     //卡牌位置
         QRect _PLayerCardsRect;
+    //头像参考位置
+        QPoint _RoleImgPos;
+    //信息提示参考位置
+        QPoint _InfoPos;
     //不出的标签
         QLabel * _NOCardlabel;
     //角色标签
