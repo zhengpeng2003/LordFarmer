@@ -4,7 +4,7 @@
 #include <QDebug>
 #include <QRandomGenerator>
 #include <QTimer>
-
+//
 Bgmcontrol::Bgmcontrol(QWidget *parent)
     : QWidget(parent)
 {
