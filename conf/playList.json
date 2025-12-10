@@ -142,10 +142,10 @@
         "qrc:/music/MusicEx_Normal2.mp3",
         "qrc:/music/MusicEx_Exciting.mp3"
     ],
-"Ending": [
-        "qrc:/music/MusicEx_Win.mp3",
-        "qrc:/music/MusicEx_Lose.mp3"
-    ],
+"Result": {
+        "Win": "qrc:/music/MusicEx_Win.mp3",
+        "Lose": "qrc:/music/MusicEx_Lose.mp3"
+    },
 "Other": [
         "qrc:/music/Special_Dispatch.mp3",
         "qrc:/music/SpecSelectCard.mp3",

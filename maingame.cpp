@@ -74,6 +74,11 @@ void Maingame::InitGamecontrol()
     connect(_Gamecontrol,&gamecontrol::S_gamenotifyGetLoard,this,&Maingame::gamenotifyGetLoard);//抢地主阶段
     connect(_Gamecontrol,&gamecontrol::S_gamePlayHand,this,&Maingame::OndisPosePlayhand);//出的牌的信号
 
+    connect(_Gamecontrol, &gamecontrol::S_StopCountdown, this, &Maingame::ResetCountdown);
+    connect(_Gamecontrol, &gamecontrol::S_PlayResult, this, [=](bool isWin){
+        _Bgmcontrol->playResultBgm(isWin);
+    });
+
 
     connect(_Gamecontrol, &gamecontrol::S_LordDetermined, this, &Maingame::OnLordDetermined);
 }
@@ -92,7 +97,7 @@ void Maingame::ResetCountdown()
         return;
     }
 
-    _Timecount->Timeout();
+    _Timecount->Reset();
     _Timecount->hide();
 }
 
@@ -636,8 +641,6 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
         qDebug()<<"分数初始化";
 
         // 添加结束音效
-        _Bgmcontrol->StartEndBgm(player->Getwin());
-
         InitEndPanel(_Gamecontrol->GetUSer());
     }
     }
@@ -943,7 +946,7 @@ void Maingame::InitPlayerTimer()
             if(_Gamecontrol->GetUSer()==_Gamecontrol->GetPendplayer())
                 return ;
             ResetCountdown();
-            _Timecount->Timestart();
+            _Timecount->Start();
             _Timecount->show();
 
         }

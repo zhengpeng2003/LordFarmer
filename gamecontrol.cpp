@@ -128,6 +128,8 @@ void gamecontrol::RetCardDate()
     _PlayHandplayer = nullptr;
     _Betrect.rest();
     _Bet = 0;
+
+    emit S_StopCountdown();
 }
 
 player *gamecontrol::GetPendplayer()
@@ -138,6 +140,7 @@ player *gamecontrol::GetPendplayer()
 void gamecontrol::StartPrepareLord()
 {
 
+    emit S_StopCountdown();
     _CurrentPlayer->PrepareGetLord();
     emit S_PlayerStateChange(_CurrentPlayer,USERSTATE::USERGETLORD);
 }
@@ -153,6 +156,8 @@ void gamecontrol::BecomeLord(player *player, int Bet)
 
     // 发射地主确定信号，包含地主玩家信息
     emit S_LordDetermined(player);
+
+    emit S_StopCountdown();
 
     QTimer::singleShot(1000, this, [this](){
         emit S_gameStateChange(GIVECARD);
@@ -177,6 +182,7 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
         // 重要修复：要不起时不更新出牌记录，保持上一个有效出牌者
         // 只有真正出牌时才更新出牌记录
 
+        emit S_StopCountdown();
         // 轮到下个人出牌
         _CurrentPlayer = player->GetNextPlayer();
         qDebug() << "轮到下一个玩家:" << _CurrentPlayer;
@@ -210,6 +216,8 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
     emit S_PlayerPlayHand(_PlayHandplayer, _PlayHandCards);
     // 告诉主界面出的牌（此时手牌已更新）
     emit S_gamePlayHand(player, cards);
+
+    emit S_StopCountdown();
 
     qDebug() << "玩家剩余牌数:" << player->GetCards().GetCardtotal();
 
@@ -255,7 +263,9 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
                 player->GetPrePlayer()->Setwin(true);
             }
         }
+        emit S_PlayResult(player->Getwin());
         emit S_PlayerStateChange(player, USERWIN);
+        emit S_StopCountdown();
         return;
     }
 
@@ -320,13 +330,13 @@ void gamecontrol::Onbet(player *player, int Bet)
 
         if(_Betrect.Bet==0)
         {
-
+            emit S_StopCountdown();
             gamecontrol::S_gameStateChange(PENDCARD);//极端就是发牌
         }
         else
         {
             BecomeLord(_Betrect.player,_Betrect.Bet);
-
+            emit S_StopCountdown();
             gamecontrol::S_gameStateChange(GIVECARD);//开始出牌
         }
         _Betrect.rest();

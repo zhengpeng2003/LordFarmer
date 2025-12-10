@@ -9,6 +9,11 @@ class Timecount : public QWidget
     Q_OBJECT
 public:
     explicit Timecount(QWidget *parent = nullptr);
+    void Start(int seconds = 15);
+    void Stop();
+    void Reset();
+
+    // 兼容旧接口
     void Timestart();
     void Timeout();
 

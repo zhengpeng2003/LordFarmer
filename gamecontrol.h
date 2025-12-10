@@ -88,6 +88,10 @@ signals:
     void S_PlayerPlayHand(player * player,Cards *cards);
     // 地主确定
     void S_LordDetermined(player* lordPlayer);
+    // 停止/隐藏倒计时
+    void S_StopCountdown();
+    // 播放结算结果
+    void S_PlayResult(bool isWin);
 private:
     robot * _Leftrobot=nullptr;
     robot * _Rightrobot=nullptr;

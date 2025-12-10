@@ -77,14 +77,11 @@ void Bgmcontrol::InitMusicPlayer()
         }
     }
 
-    // 读取结束音效
-    if (root.contains("Ending") && root["Ending"].isArray()) {
-        QJsonArray array = root["Ending"].toArray();
-        for (const QJsonValue &value : array) {
-            if (value.isString()) {
-                _Endbgm.append(value.toString());
-            }
-        }
+    // 读取结果音效
+    if (root.contains("Result") && root["Result"].isObject()) {
+        QJsonObject resultObj = root["Result"].toObject();
+        _WinResult = resultObj.value("Win").toString();
+        _LoseResult = resultObj.value("Lose").toString();
     }
 
     // 读取其他音效
@@ -101,7 +98,8 @@ void Bgmcontrol::InitMusicPlayer()
     qDebug() << "男性音效:" << _Manbgm.size();
     qDebug() << "女性音效:" << _Womanbgm.size();
     qDebug() << "背景音乐:" << _Bgm.size();
-    qDebug() << "结束音效:" << _Endbgm.size();
+    qDebug() << "胜利音效路径:" << _WinResult;
+    qDebug() << "失败音效路径:" << _LoseResult;
     qDebug() << "其他音效:" << _Otherbgm.size();
 }
 
@@ -145,21 +143,21 @@ void Bgmcontrol::StopBgm()
 
 void Bgmcontrol::StartEndBgm(bool isWin)
 {
-    // 先停止背景音乐
+    playResultBgm(isWin);
+}
+
+void Bgmcontrol::playResultBgm(bool isWin)
+{
     StopBgm();
 
-    if (_Endbgm.isEmpty()) return;
+    const QString &endPath = isWin ? _WinResult : _LoseResult;
+    if (endPath.isEmpty()) return;
 
-    QMediaPlayer *endPlayer = _MPlayer[4]; // 结束音效播放器
-
-    int index = isWin ? 0 : 1;
-    if (index < 0 || index >= _Endbgm.size()) return;
-    QString endPath = _Endbgm[index];
-
+    QMediaPlayer *endPlayer = _MPlayer[4];
     endPlayer->setSource(QUrl(endPath));
     endPlayer->play();
 
-    qDebug() << "播放结束音效:" << endPath;
+    qDebug() << "播放结果音效:" << endPath;
 }
 
 void Bgmcontrol::PlayeHandBgm(player::Sex sex, bool isfirst, Cards *cards)
