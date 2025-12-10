@@ -124,12 +124,10 @@ QPoint Maingame::CalculateLabelPosAbovePlayArea(_Playercontext* ctx, const QSize
     if(anchor.isNull())
     {
         anchor = ctx->_PlayerHandRect.center();
-        anchor.ry() -= baseOffset;
     }
-    else
-    {
-        anchor.ry() -= baseOffset;
-    }
+
+    // 始终基于玩家的出牌区域（_PlayerHandRect）向上微调，确保标签位于出牌区域的中心或上方
+    anchor.ry() -= baseOffset;
 
     return CalculateCenteredPos(anchor, labelSize);
 }
@@ -238,9 +236,9 @@ void Maingame::InitGroupbtn()
     // 4.信息提示位置
     const QPoint info[] =
         {
-            QPoint(playHandRect[0].center().x(), playHandRect[0].top() - _IMage_Card_Size.height() / 2),
-            QPoint(playHandRect[1].center().x(), playHandRect[1].top() - _IMage_Card_Size.height() / 2),
-            QPoint(playHandRect[2].center().x(), playHandRect[2].top() - _IMage_Card_Size.height() / 2)
+            playHandRect[0].center(),
+            playHandRect[1].center(),
+            playHandRect[2].center()
 
         };
     int index=_Players.indexOf(_Gamecontrol->GetUSer());
