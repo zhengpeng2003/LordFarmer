@@ -98,6 +98,8 @@ public:
     void UserPlayHand();
     //玩家要不起
     void UserNoPlayer();
+    // 自由出牌超时自动打出第一张牌
+    void AutoPlayFirstCard();
     //重新游戏
     void RePlayGame();
     //出牌时间闹钟

@@ -985,6 +985,33 @@ void Maingame::UserNoPlayer()
     ui->widget->Setbtngroupstate(MybuttonGroup::Null);
 }
 
+void Maingame::AutoPlayFirstCard()
+{
+    if(_Gamecontrol->GetCurrentPlayer() != _Gamecontrol->GetUSer())
+    {
+        return;
+    }
+
+    Cards userCards = _Gamecontrol->GetUSer()->GetCards();
+    QListcard list = userCards.Listcardssort();
+
+    if(list.isEmpty())
+    {
+        qDebug() << "自动出牌失败：手牌为空";
+        return;
+    }
+
+    qDebug() << "自由出牌超时，自动打出第一张牌";
+
+    Cards *autoCards = new Cards();
+    autoCards->add(list.first());
+
+    _Gamecontrol->GetCurrentPlayer()->PlayHand(autoCards);
+
+    ClearSelectedPanels();
+    PendCardpos(_Gamecontrol->GetUSer());
+}
+
 void Maingame::ClearSelectedPanels()
 {
     for (CardPanel* panel : _SelcetPanel)
@@ -1009,7 +1036,24 @@ void Maingame::InitPlayerTimer()
     _Timecount->move((width()-_Timecount->width())/2,(height()-_Timecount->height())/2+100);
     //时间到了
     connect(_Timecount,&Timecount::S_TimeOUt,this,[=](){
-        UserNoPlayer();
+        if(_Gamecontrol->GetCurrentPlayer() != _Gamecontrol->GetUSer())
+        {
+            ResetCountdown();
+            return;
+        }
+
+        const bool isFreePlay = (_Gamecontrol->GetPendplayer() == nullptr ||
+                                 _Gamecontrol->GetPendplayer() == _Gamecontrol->GetCurrentPlayer());
+
+        if(isFreePlay)
+        {
+            AutoPlayFirstCard();
+        }
+        else
+        {
+            UserNoPlayer();
+        }
+
         ResetCountdown();
 
     });
@@ -1028,8 +1072,6 @@ void Maingame::InitPlayerTimer()
         if(_Gamecontrol->GetUSer()==_Gamecontrol->GetCurrentPlayer())
         {
             qDebug()<<"触发信号";
-            if(_Gamecontrol->GetUSer()==_Gamecontrol->GetPendplayer())
-                return ;
             ResetCountdown();
             _Timecount->Start();
             _Timecount->show();
