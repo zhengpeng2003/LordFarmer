@@ -23,24 +23,40 @@ Timecount::Timecount(QWidget *parent)
         {
             //跳过不出
             emit S_TimeOUt();
-            Timeout();
+            Reset();
         }
         update();
     });
 }
 
-void Timecount::Timestart()
+void Timecount::Start(int seconds)
 {
     _Timer->start(1000);
-    count = 15;
+    count = seconds;
+}
+
+void Timecount::Stop()
+{
+    _Timer->stop();
+}
+
+void Timecount::Reset()
+{
+    Stop();
+    _BgPix = QPixmap();
+    _Number = QPixmap();
+    count = 0;
+    update();
+}
+
+void Timecount::Timestart()
+{
+    Start();
 }
 
 void Timecount::Timeout()
 {
-    _Timer->stop();
-    _BgPix = QPixmap();
-    _Number = QPixmap();
-    count = 15;
+    Reset();
 }
 
 void Timecount::paintEvent(QPaintEvent *event)

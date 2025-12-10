@@ -72,6 +72,7 @@ public:
     void StopBgm();
     //结束音乐播放
     void StartEndBgm(bool isWin);
+    void playResultBgm(bool isWin);
     //出牌的音乐播放
     void PlayeHandBgm(player::Sex sex,bool isfirst,Cards *cards);
     //不出牌音乐
@@ -97,8 +98,8 @@ private:
     QList<QString> _Bgm;
     //辅助音乐
     QList<QString> _Otherbgm;
-    //结束音乐
-    QList<QString> _Endbgm;
+    QString _WinResult;
+    QString _LoseResult;
 
 
 };
