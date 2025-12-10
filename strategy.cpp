@@ -307,46 +307,69 @@ QVector<Cards*> Strategy::GetCardstype(PlayHand playhand, bool beat)
 
     switch (t) {
     case PlayHand::Hand_Single:
-        return FindHand_Sing123(start, 1);
+        result = FindHand_Sing123(start, 1);
+        break;
     case PlayHand::Hand_Pair:
-        return FindHand_Sing123(start, 2);
+        result = FindHand_Sing123(start, 2);
+        break;
     case PlayHand::Hand_Triple:
-        return FindHand_Sing123(start, 3);
+        result = FindHand_Sing123(start, 3);
+        break;
     case PlayHand::Hand_Triple_Single:
-        return FindHand_Triple12(start, 1);
+        result = FindHand_Triple12(start, 1);
+        break;
     case PlayHand::Hand_Triple_Pair:
-        return FindHand_Triple12(start, 2);
+        result = FindHand_Triple12(start, 2);
+        break;
     case PlayHand::Hand_Plane:
-        return FindHand_Plane12(start, 0);
+        result = FindHand_Plane12(start, 0);
+        break;
     case PlayHand::Hand_Plane_Two_Single:
-        return FindHand_Plane12(start, 1);
+        result = FindHand_Plane12(start, 1);
+        break;
     case PlayHand::Hand_Plane_Two_Pair:
-        return FindHand_Plane12(start, 2);
+        result = FindHand_Plane12(start, 2);
+        break;
     case PlayHand::Hand_Seq_Pair:
     {
         Info info;
-        info.base = 3;
+        info.base = beat ? playhand.Getplayhandsheet() / 2 : 3;
         info.beat = beat;
         info.begin = Card::Card_3;
         info.end = Card::Card_Q;
         info.number = 2;
-        return FindHand_parisim(info);
+        result = FindHand_parisim(info);
+        break;
     }
     case PlayHand::Hand_Seq_Sim:
     {
         Info info;
-        info.base = 5;
+        info.base = beat ? playhand.Getplayhandsheet() : 5;
         info.beat = beat;
         info.begin = Card::Card_3;
         info.end = Card::Card_10;
         info.number = 1;
-        return FindHand_parisim(info);
+        result = FindHand_parisim(info);
+        break;
     }
     case PlayHand::Hand_Bomb:
-        return Getsamecount(4);
+        result = Getsamecount(4);
+        break;
     default:
         return result;
     }
+
+    if (beat) {
+        const int targetSheet = playhand.Getplayhandsheet();
+        for (int i = result.size() - 1; i >= 0; --i) {
+            if (result[i]->GetCardtotal() != targetSheet) {
+                delete result[i];
+                result.remove(i);
+            }
+        }
+    }
+
+    return result;
 }
 
 QVector<Cards*> Strategy::FindHand_Sing123(Card::cardpoint point, int count)
