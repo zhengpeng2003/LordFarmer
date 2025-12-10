@@ -69,6 +69,8 @@ public:
     //获取卡牌池还有多少张
     int GetCardcount();
     Cards * GetAllCards();
+    // 当前叫分最高分（0 表示无人叫分）
+    int GetCurrentMaxBet() const { return _Betrect.Bet; }
     //开始下注
     void Onbet(player * player,int Bet);
 

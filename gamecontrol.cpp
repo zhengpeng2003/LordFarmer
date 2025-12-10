@@ -303,41 +303,39 @@ Cards* gamecontrol::GetAllCards()
 void gamecontrol::Onbet(player *player, int Bet)
 {
 
+    // 是否首家叫分，用于区分"叫"和"抢"
+    const bool isFirst = (_Betrect.times == 0 && Bet > 0);
 
-    //发送到哪个玩家的游戏状态
-    if(Bet==0||_Betrect.Bet>=Bet)
+    // 更新当前最高分：只有当有人真正叫分且分值更高时才更新
+    if(Bet > 0)
     {
-        emit S_gamenotifyGetLoard(player,0,false);
+        if(_Betrect.Bet == 0 || Bet > _Betrect.Bet)
+        {
+            _Betrect.Bet = Bet;
+            _Betrect.player = player;
+        }
     }
-    else if(_Betrect.times==0&&Bet>0)
-    {
-        emit S_gamenotifyGetLoard(player,Bet,true);
-    }
-    else
-    {
-        emit S_gamenotifyGetLoard(player,Bet,false);
-    }
-    //记录分数 发送游戏结束信号
-    if(_Betrect.Bet<Bet)
-    {
-        _Betrect.Bet=Bet;
-        _Betrect.player=player;
 
-    }
+    // 通知 UI 玩家本次操作（Bet 原样传递，避免被误判为“不抢”）
+    emit S_gamenotifyGetLoard(player, Bet, isFirst);
+
     _Betrect.times++;
 
     if(_Betrect.times==3)//触发重新开始
     {
 
+        emit S_StopCountdown();
+
         if(_Betrect.Bet==0)
         {
-            emit S_StopCountdown();
+            // 全员都没有叫分，重新洗牌发牌
+            RetCardDate();
+            SetCurrentPlayer(_UserPlayer);
             gamecontrol::S_gameStateChange(PENDCARD);//极端就是发牌
         }
         else
         {
             BecomeLord(_Betrect.player,_Betrect.Bet);
-            emit S_StopCountdown();
             gamecontrol::S_gameStateChange(GIVECARD);//开始出牌
         }
         _Betrect.rest();

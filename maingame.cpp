@@ -443,6 +443,7 @@ void Maingame::SetCurrentGameStatue(gamecontrol::GameState state)
         ResetCountdown();
         _CanSelectCards = false;
         _IsUserFirstLordPlay = false;
+        _MyAnmation->hide();
         ui->widget->Setbtngroupstate(MybuttonGroup::Null);
         SatrtPend();
         //开始游戏开始音乐
@@ -468,6 +469,7 @@ void Maingame::SetCurrentGameStatue(gamecontrol::GameState state)
         ResetCountdown();
         _CanSelectCards = false;
         ClearSelectedPanels();
+        _MyAnmation->hide();
         _LordCards[0]->show();
         _LordCards[1]->show();
         _LordCards[2]->show();
@@ -744,10 +746,18 @@ void Maingame::gamenotifyGetLoard(player *player, int Bet, bool first)
     ShowPlayerInfoImage(player, statusPixmap);
 
     // 显示下注动画
-    _MyAnmation->ShowBet(Bet);
-    _MyAnmation->resize(160,98);
-    _MyAnmation->move((width()-_MyAnmation->width())/2,(height()-_MyAnmation->height())/2-140);
-    _MyAnmation->show();
+    const int maxBet = _Gamecontrol->GetCurrentMaxBet();
+    if(maxBet > 0)
+    {
+        _MyAnmation->ShowBet(maxBet);
+        _MyAnmation->resize(160,98);
+        _MyAnmation->move((width()-_MyAnmation->width())/2,(height()-_MyAnmation->height())/2-140);
+        _MyAnmation->show();
+    }
+    else
+    {
+        _MyAnmation->hide();
+    }
 
     ui->widget->Setbtngroupstate(MybuttonGroup::Null);
 
