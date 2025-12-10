@@ -160,6 +160,9 @@ private:
     bool _IsDraggingSelect = false;
     int _InfoLabelSeq = 0;
     QList<CardPanel*> _RobotRevealPanels;
+    int _LastLeftScore = 0;
+    int _LastRightScore = 0;
+    int _LastUserScore = 0;
 
 };
 #endif // MAINGAME_H

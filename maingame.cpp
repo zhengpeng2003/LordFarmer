@@ -783,6 +783,9 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
             PendCardpos(p);
         }
         ResetCountdown();      // ← 加
+        _LastLeftScore = _Players.at(0)->GetScore();
+        _LastRightScore = _Players.at(1)->GetScore();
+        _LastUserScore = _Players.at(2)->GetScore();
         InitScore();//初始化分数
         // qDebug()<<"分数初始化";
 
