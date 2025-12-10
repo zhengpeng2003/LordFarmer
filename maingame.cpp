@@ -89,7 +89,10 @@ void Maingame::InitScore()
 {
     ui->widget_showscore->InitScore(_Players.at(0)->GetScore(),
                                     _Players.at(1)->GetScore(),
-                                    _Players.at(2)->GetScore());
+                                    _Players.at(2)->GetScore(),
+                                    _Players.at(0)->GetTotalScore(),
+                                    _Players.at(1)->GetTotalScore(),
+                                    _Players.at(2)->GetTotalScore());
 }
 
 void Maingame::ResetCountdown()

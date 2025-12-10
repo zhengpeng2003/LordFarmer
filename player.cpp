@@ -2,7 +2,20 @@
 #include "qdebug.h"
 
 player::player(QObject *parent)
-    : QObject{parent}
+    : QObject{parent},
+    _Isfront(false),
+    _Name(),
+    _Score(0),
+    _TotalScore(0),
+    _PlayerType(NOKNOW),
+    _Location(LEFT),
+    _Role(UN_KONWROLE),
+    _Sex(UN_KONWSEX),
+    _Preplayer(nullptr),
+    _Nextplayer(nullptr),
+    _PendPlayer(nullptr),
+    _PendCard(nullptr),
+    _Win(false)
 {}
 
 player::player(QString Name, PlayerType playerType, Location location, QObject *parent)
@@ -10,6 +23,7 @@ player::player(QString Name, PlayerType playerType, Location location, QObject *
     _Isfront(false),
     _Name(Name),
     _Score(0),   // 参数名避免与成员变量相同
+    _TotalScore(0),
     _PlayerType(playerType),
     _Location(location),      // 添加缺失的初始化
     _Role(UN_KONWROLE),        // 根据你的枚举类型设置默认值
@@ -30,6 +44,21 @@ int  player::GetScore()
 void player::SetScore(int score)
 {
     this->_Score=score;
+}
+
+void player::AddToTotalScore(int delta)
+{
+    _TotalScore += delta;
+}
+
+int player::GetTotalScore() const
+{
+    return _TotalScore;
+}
+
+void player::ResetTotalScore()
+{
+    _TotalScore = 0;
 }
 
 player *player::GetPrePlayer()

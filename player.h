@@ -19,6 +19,12 @@ public:
 
     void SetScore(int score);
     int GetScore();
+    // 累计总分（跨局）
+    void AddToTotalScore(int delta);
+    // 获取累计总分
+    int GetTotalScore() const;
+    // 全局重置累计分
+    void ResetTotalScore();
     //获取前节点
     player * GetPrePlayer();
     //获取后节点
@@ -83,6 +89,7 @@ protected:
     bool _Isfront;
     QString _Name;//姓名
     int _Score;//分数
+    int _TotalScore;//总分（跨局累计）
     PlayerType _PlayerType;//机器人还是用户
     Location _Location;//位置
     Role _Role;//角色

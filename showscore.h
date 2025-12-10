@@ -13,7 +13,8 @@ class ShowScore : public QWidget
 
 public:
     explicit ShowScore(QWidget *parent = nullptr);
-    void InitScore(int a,int b,int c);
+    void InitScore(int roundA,int roundB,int roundUser,
+                  int totalA,int totalB,int totalUser);
     ~ShowScore();
 
 private:

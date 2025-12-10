@@ -24,7 +24,12 @@ EndPanel::EndPanel(player *player, QWidget *parent) :QWidget{parent},_Player(pla
     }
     ShowScore * WidgetSCore=new ShowScore(this);
 
-    WidgetSCore->InitScore(player->GetPrePlayer()->GetScore(),player->GetNextPlayer()->GetScore(),player->GetScore());
+    WidgetSCore->InitScore(player->GetPrePlayer()->GetScore(),
+                           player->GetNextPlayer()->GetScore(),
+                           player->GetScore(),
+                           player->GetPrePlayer()->GetTotalScore(),
+                           player->GetNextPlayer()->GetTotalScore(),
+                           player->GetTotalScore());
     QString stylebtn=R"(
     QPushButton {
         border: none;

@@ -6,9 +6,8 @@ ShowScore::ShowScore(QWidget *parent)
     , ui(new Ui::ShowScore)
 {
     ui->setupUi(this);
-    myLable<<ui->label<<ui->label_2<<ui->label_3<<
-    ui->label_7<<ui->label_8<<ui->label_9<<
-        ui->label_A<<ui->label_B<<ui->label_Me;
+    myLable<<ui->label_A<<ui->label_B<<ui->label_Me
+           <<ui->label_TotalA<<ui->label_TotalB<<ui->label_TotalMe;
     QString scoreStyle = R"(
         QLabel {
             color: red;
@@ -21,15 +20,29 @@ ShowScore::ShowScore(QWidget *parent)
     {
         myLable.at(i)->setStyleSheet(scoreStyle);
     }
+
+    QString titleStyle = R"(
+        QLabel {
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            background: transparent;
+        }
+    )";
+    ui->label_round_title->setStyleSheet(titleStyle);
+    ui->label_total_title->setStyleSheet(titleStyle);
 }
 
-void ShowScore::InitScore(int a, int b, int c)
+void ShowScore::InitScore(int roundA, int roundB, int roundUser,
+                         int totalA, int totalB, int totalUser)
 {
+    ui->label_A->setText(QString::number(roundA));
+    ui->label_B->setText(QString::number(roundB));
+    ui->label_Me->setText(QString::number(roundUser));
 
-    ui->label_A->setText(QString::number(a));
-    ui->label_B->setText(QString::number(b));
-    ui->label_Me->setText(QString::number(c));
-
+    ui->label_TotalA->setText(QString::number(totalA));
+    ui->label_TotalB->setText(QString::number(totalB));
+    ui->label_TotalMe->setText(QString::number(totalUser));
 }
 
 ShowScore::~ShowScore()

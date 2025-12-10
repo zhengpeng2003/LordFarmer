@@ -75,6 +75,23 @@
    <item row="0" column="1">
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
+      <widget class="QLabel" name="label_round_title">
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>12</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string>本局</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QLabel" name="label_A">
        <property name="font">
         <font>
@@ -130,16 +147,16 @@
    <item row="0" column="2">
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <widget class="QLabel" name="label_7">
+      <widget class="QLabel" name="label_total_title">
        <property name="font">
         <font>
          <family>Arial</family>
-         <pointsize>14</pointsize>
+         <pointsize>12</pointsize>
          <bold>true</bold>
         </font>
        </property>
        <property name="text">
-        <string>分</string>
+        <string>总计</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -147,7 +164,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_9">
+      <widget class="QLabel" name="label_TotalA">
        <property name="font">
         <font>
          <family>Arial</family>
@@ -156,7 +173,7 @@
         </font>
        </property>
        <property name="text">
-        <string>分</string>
+        <string/>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
@@ -164,7 +181,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLabel" name="label_8">
+      <widget class="QLabel" name="label_TotalB">
        <property name="font">
         <font>
          <family>Arial</family>
@@ -173,7 +190,24 @@
         </font>
        </property>
        <property name="text">
-        <string>分</string>
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_TotalMe">
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>14</pointsize>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
        </property>
        <property name="alignment">
         <set>Qt::AlignCenter</set>
