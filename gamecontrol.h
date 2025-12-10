@@ -76,8 +76,8 @@ public:
     bool IsUserLandlordFirstTurnActive() const;
     // 标记用户首轮地主出牌已结束
     void MarkUserLandlordFirstTurnFinished();
-    // 用户首轮倒计时结束时自动出第一张牌
-    void AutoPlayFirstCardForUser();
+    // 用户首轮或自由出牌倒计时结束时自动出第一张牌
+    void AutoPlayFirstCardForUser(bool allowAnyFreePlay = false);
 
     player * GetLeftroot();
     player * GetRightroot();

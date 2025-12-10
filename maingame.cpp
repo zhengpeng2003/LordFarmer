@@ -1004,14 +1004,21 @@ void Maingame::RePlayGame()
 
 void Maingame::InitPlayerTimer()
 {
-    // 初始化用户出牌计时器，只针对地主首轮出牌展示倒计时与自动出牌
+    // 初始化用户出牌计时器，对地主首轮及自由出牌阶段展示倒计时与自动出牌
     _Timecount=new Timecount(this);
     _Timecount->move((width()-_Timecount->width())/2,(height()-_Timecount->height())/2+100);
     //时间到了
     connect(_Timecount,&Timecount::S_TimeOUt,this,[=](){
-        // 仅当处于用户地主首轮且轮到用户时触发自动出第一张牌
-        if(_Gamecontrol->IsUserLandlordFirstTurnActive()
-                && _Gamecontrol->GetCurrentPlayer() == _Gamecontrol->GetUSer())
+        const bool isUserTurn = (_Gamecontrol->GetCurrentPlayer() == _Gamecontrol->GetUSer());
+        const bool isFreePlay = (_Gamecontrol->GetPendplayer() == nullptr ||
+                                 _Gamecontrol->GetPendplayer() == _Gamecontrol->GetCurrentPlayer());
+
+        if(isUserTurn && isFreePlay)
+        {
+            _Gamecontrol->AutoPlayFirstCardForUser(true);
+        }
+        else if(_Gamecontrol->IsUserLandlordFirstTurnActive()
+                && isUserTurn)
         {
             _Gamecontrol->AutoPlayFirstCardForUser();
         }
@@ -1036,13 +1043,14 @@ void Maingame::InitPlayerTimer()
 
         if(_Gamecontrol->GetUSer()==_Gamecontrol->GetCurrentPlayer())
         {
-            // 只有用户刚成为地主且轮到首轮出牌时才启动倒计时
-            if(!_Gamecontrol->IsUserLandlordFirstTurnActive())
+            const bool isFreePlay = (_Gamecontrol->GetPendplayer() == nullptr ||
+                                     _Gamecontrol->GetPendplayer() == _Gamecontrol->GetCurrentPlayer());
+
+            // 用户地主首轮或自由出牌阶段均需要倒计时
+            if(!_Gamecontrol->IsUserLandlordFirstTurnActive() && !isFreePlay)
             {
                 return;
             }
-            if(_Gamecontrol->GetUSer()==_Gamecontrol->GetPendplayer())
-                return ;
             ResetCountdown();
             _Timecount->Start();
             _Timecount->show();

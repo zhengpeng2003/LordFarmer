@@ -400,10 +400,10 @@ void gamecontrol::MarkUserLandlordFirstTurnFinished()
 }
 
 // 倒计时超时后，自动打出用户当前手牌的第一张牌
-void gamecontrol::AutoPlayFirstCardForUser()
+void gamecontrol::AutoPlayFirstCardForUser(bool allowAnyFreePlay)
 {
-    // 仅在用户成为地主后的首轮出牌且轮到用户时自动出第一张
-    if(!_UserLandlordFirstTurnActive || !_UserPlayer || _CurrentPlayer != _UserPlayer)
+    // 仅在需要自动出牌时（地主首轮或自由出牌）且轮到用户时才执行
+    if((!_UserLandlordFirstTurnActive && !allowAnyFreePlay) || !_UserPlayer || _CurrentPlayer != _UserPlayer)
     {
         return;
     }
@@ -412,13 +412,21 @@ void gamecontrol::AutoPlayFirstCardForUser()
     QListcard sortedCards = userCards.Listcardssort(Cards::ASC);
     if(sortedCards.isEmpty())
     {
-        MarkUserLandlordFirstTurnFinished();
+        if(_UserLandlordFirstTurnActive)
+        {
+            MarkUserLandlordFirstTurnFinished();
+        }
         return;
     }
 
     Cards *autoCards = new Cards();
     autoCards->add(sortedCards.first());
     _UserPlayer->PlayHand(autoCards);
+
+    if(_UserLandlordFirstTurnActive)
+    {
+        MarkUserLandlordFirstTurnFinished();
+    }
 }
 
 
