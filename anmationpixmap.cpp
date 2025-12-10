@@ -6,7 +6,11 @@ AnmationPixmap::AnmationPixmap(QWidget *parent)
 
 void AnmationPixmap::ShowBet(int Bet)
 {
-    if(Bet==1)
+    if(Bet <= 0)
+    {
+        _Mypix.load(":/images/buqinag.png");
+    }
+    else if(Bet==1)
     {
         _Mypix.load(":/images/score1.png");
     }
