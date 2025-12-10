@@ -82,6 +82,8 @@ public:
     void Showanimation(PlayHand::HandType type);
     //成为地主换图片
     void OnLordDetermined(player* lordPlayer);
+    void ResetCountdown();
+    void ShowPlayerInfoImage(player *player, const QPixmap &pixmap);
     //清空当前玩家的选中状态
     void ClearSelectedPanels();
     ~Maingame();
