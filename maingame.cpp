@@ -526,7 +526,8 @@ void Maingame::PendCardplayer(player *player)
 
 void Maingame::PendCardpos(player* player) {
     Cards cards = player->GetCards();
-    QListcard sortedCards = cards.Listcardssort();
+    // 地主手牌展示强制按从小到大排序，便于识别
+    QListcard sortedCards = cards.Listcardssort(player->GetRole() == player::LORD ? Cards::ASC : Cards::ASC);
     _Playercontext* context = _Playercontexts[player];
     QRect rect = context->_PLayerCardsRect;
     QRect Panelrect;
