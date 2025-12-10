@@ -181,6 +181,18 @@ void Bgmcontrol::PlayeHandBgm(player::Sex sex, bool isfirst, Cards *cards)
     Sound soundIndex = Sound::_3;
     Card::cardpoint point = playHand.Getplayhandpoint();
     bool shouldPlayDani = false;
+    const bool isBeatStage = !isfirst;
+
+    // 特殊牌型在压牌时直接播放"大你"特效，替换炸弹/顺子等原音效
+    const bool forceDaniOnly = isBeatStage && (handType == PlayHand::Hand_Bomb
+                                               || handType == PlayHand::Hand_Bomb_Jokers
+                                               || handType == PlayHand::Hand_Seq_Sim
+                                               || handType == PlayHand::Hand_Seq_Pair
+                                               || handType == PlayHand::Hand_Plane
+                                               || handType == PlayHand::Hand_Plane_Two_Single
+                                               || handType == PlayHand::Hand_Plane_Two_Pair
+                                               || handType == PlayHand::Hand_Triple_Single
+                                               || handType == PlayHand::Hand_Triple_Pair);
 
     // 修复牌点到音效索引的映射
     switch (handType) {
@@ -270,11 +282,17 @@ void Bgmcontrol::PlayeHandBgm(player::Sex sex, bool isfirst, Cards *cards)
         break;
     }
 
+    if (forceDaniOnly) {
+        // 压牌时的特殊牌型直接使用大你音效替换原有炸弹/顺子/王炸音效
+        playSoundBySex(sex, Sound::DANI3, "压牌特效音效");
+        return;
+    }
+
     // 自由出牌：仅播放牌型音效
     playSoundBySex(sex, soundIndex, "出牌音效");
 
     // 压牌阶段：在播放完牌型音效后追加"大你"特效
-    if(!isfirst && shouldPlayDani)
+    if(isBeatStage && shouldPlayDani)
     {
         QTimer::singleShot(150, this, [=](){
             playSoundBySex(sex, Sound::DANI3, "压牌特效音效");
