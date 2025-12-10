@@ -129,6 +129,7 @@ bool Strategy::IsPlayHand(PlayHand type)
     if (!preplayer || !preCards) return false;
 
     const bool sameRole = (preplayer->GetRole() == m_player->GetRole());
+    const bool isFarmerTeam = sameRole && m_player->GetRole() == player::FORMAR;
     QVector<Cards*> list = GetCardstype(type, true);
     const bool hasOption = !list.isEmpty();
 
@@ -144,6 +145,10 @@ bool Strategy::IsPlayHand(PlayHand type)
 
     bool canFinish = false;
     bool hasPowerCombo = false;
+    const int myHandCount = m_cards.GetCardtotal();
+    const bool teammateJustPlayed = sameRole;
+    const bool iHavePlentyCards = myHandCount >= 10;
+    const bool teammateStillHealthy = preplayer->GetCards().GetCardtotal() > 4;
     for (auto option : list) {
         if (option->GetCardtotal() == m_cards.GetCardtotal()) {
             canFinish = true;
@@ -154,12 +159,13 @@ bool Strategy::IsPlayHand(PlayHand type)
         }
     }
 
-    const bool lowHand = m_cards.GetCardtotal() <= 5;
+    const bool lowHand = myHandCount <= 5;
     const bool teammateIsCritical = preplayer->GetCards().GetCardtotal() <= 2;
+    const bool shouldHelpTeammate = isFarmerTeam && teammateJustPlayed && iHavePlentyCards && teammateStillHealthy;
 
     for (auto p : list) delete p;
 
-    return canFinish || lowHand || teammateIsCritical || hasPowerCombo;
+    return canFinish || lowHand || teammateIsCritical || hasPowerCombo || shouldHelpTeammate;
 }
 
 Cards* Strategy::Getbigplayhand(PlayHand type)
@@ -222,8 +228,16 @@ Cards* Strategy::Getbigplayhand(PlayHand type)
             Strategy remainSt(m_player, remain);
             int remainScore = remainSt.EvaluateCardValue(&remain);
 
+            const int myRemainCount = remain.GetCardtotal();
             int partnerPenalty = sameRole ? 2 : 0;
             int aggressionBonus = sameRole ? 0 : 2;
+
+            if (sameRole && m_player && m_player->GetRole() == player::FORMAR) {
+                if (myRemainCount >= 10 || m_cards.GetCardtotal() >= 12) {
+                    partnerPenalty = 0;              // 牌多时适当放宽
+                    aggressionBonus += 1;            // 更主动压队友牌
+                }
+            }
 
             return -base - bombPenalty - partnerPenalty + aggressionBonus + option->GetCardtotal() + remainScore / 10;
         };
