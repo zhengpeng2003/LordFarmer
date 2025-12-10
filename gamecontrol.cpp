@@ -121,6 +121,9 @@ void gamecontrol::RetCardDate()
     _Leftrobot->ResetForNewGame();
     _UserPlayer->ResetForNewGame();
 
+    // 重置用户地主首轮状态
+    _UserLandlordFirstTurnActive = false;
+
     // 3. 当前局状态清零，避免上一局信息泄漏到新局
     _CurrentPlayer = nullptr;
     _CurrentCards = nullptr;
@@ -145,8 +148,11 @@ void gamecontrol::StartPrepareLord()
     emit S_PlayerStateChange(_CurrentPlayer,USERSTATE::USERGETLORD);
 }
 
+// 确定地主后，记录是否由用户担任地主以便后续首轮计时与自动出牌
 void gamecontrol::BecomeLord(player *player, int Bet)
 {
+    // 当玩家成为地主时，记录是否由用户担任地主以控制首轮自动出牌
+    _UserLandlordFirstTurnActive = (player == _UserPlayer);
     _CurrentPlayer = player;
     player->setRole(player::LORD);
     player->GetNextPlayer()->setRole(player::FORMAR);
@@ -168,16 +174,19 @@ void gamecontrol::BecomeLord(player *player, int Bet)
     _CurrentPlayer->PreparePlayCard();
 }
 
+// 核心出牌入口，负责更新出牌状态并在用户地主首轮时落地自动出牌状态
 void gamecontrol::GamePlayhand(player *player, Cards *cards)
 {
-    qDebug() << "=== GamePlayhand ===";
-    qDebug() << "出牌玩家:" << player;
-    qDebug() << "上一个出牌者:" << _PlayHandplayer;
-    qDebug() << "牌数:" << (cards ? cards->GetCardtotal() : 0);
+    // 当用户成为地主后的首轮出牌需要特殊处理计时与自动出牌
+    const bool isUserFirstLandlordTurn = _UserLandlordFirstTurnActive && player == _UserPlayer;
+    // qDebug() << "=== GamePlayhand ===";
+    // qDebug() << "出牌玩家:" << player;
+    // qDebug() << "上一个出牌者:" << _PlayHandplayer;
+    // qDebug() << "牌数:" << (cards ? cards->GetCardtotal() : 0);
 
     // 关键修复：正确处理"要不起"的情况
     if (!cards || cards->isempty()) {
-        qDebug() << "玩家要不起";
+        // qDebug() << "玩家要不起";
 
         // 重要修复：要不起时不更新出牌记录，保持上一个有效出牌者
         // 只有真正出牌时才更新出牌记录
@@ -185,7 +194,13 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
         emit S_StopCountdown();
         // 轮到下个人出牌
         _CurrentPlayer = player->GetNextPlayer();
-        qDebug() << "轮到下一个玩家:" << _CurrentPlayer;
+        // qDebug() << "轮到下一个玩家:" << _CurrentPlayer;
+
+        if(isUserFirstLandlordTurn)
+        {
+            // 用户地主首轮已完成，不再触发自动出牌
+            MarkUserLandlordFirstTurnFinished();
+        }
 
         // 通知界面层刷新“要不起”表现（文字与音效）
         emit S_gamePlayHand(player, cards);
@@ -200,7 +215,7 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
         return;
     }
 
-    qDebug() << "玩家正常出牌";
+    // qDebug() << "玩家正常出牌";
 
     // 重要修复：只有真正出牌（不是要不起）时才更新出牌记录
     _PlayHandplayer = player;
@@ -219,21 +234,21 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
 
     emit S_StopCountdown();
 
-    qDebug() << "玩家剩余牌数:" << player->GetCards().GetCardtotal();
+    // qDebug() << "玩家剩余牌数:" << player->GetCards().GetCardtotal();
 
     // 倍数翻倍逻辑
     PlayHand playHand(cards);
     PlayHand::HandType type = playHand.Getplayhandtype();
-    qDebug() << "牌型:" << type;
+    // qDebug() << "牌型:" << type;
 
     if(type == PlayHand::Hand_Bomb) {
         _Bet *= 2;
-        qDebug() << "炸弹！倍数变为:" << _Bet;
+        // qDebug() << "炸弹！倍数变为:" << _Bet;
     }
 
     // 检查游戏是否结束
     if(player->GetCards().isempty()) {
-        qDebug() << "游戏结束！";
+        // qDebug() << "游戏结束！";
         if(player->GetRole() == player::LORD)
         {
             player->SetScore(player->GetScore() + 2 * _Bet);
@@ -267,12 +282,22 @@ void gamecontrol::GamePlayhand(player *player, Cards *cards)
         emit S_PlayResult(isUserWin);
         emit S_PlayerStateChange(player, USERWIN);
         emit S_StopCountdown();
+        if(isUserFirstLandlordTurn)
+        {
+            MarkUserLandlordFirstTurnFinished();
+        }
         return;
     }
 
     // 轮到下个人出牌
     _CurrentPlayer = player->GetNextPlayer();
-    qDebug() << "轮到下一个玩家:" << _CurrentPlayer;
+    // qDebug() << "轮到下一个玩家:" << _CurrentPlayer;
+
+    if(isUserFirstLandlordTurn)
+    {
+        // 用户地主首轮已完成
+        MarkUserLandlordFirstTurnFinished();
+    }
 
     QTimer::singleShot(1, this, [this]() {
         if (_CurrentPlayer) {
@@ -361,6 +386,39 @@ player *gamecontrol::GetUSer()
 {
     return _UserPlayer;
 }
-// 在 gamecontrol 类中添加
+
+bool gamecontrol::IsUserLandlordFirstTurnActive() const
+{
+    return _UserLandlordFirstTurnActive;
+}
+
+// 用户地主首轮出牌结束时清理状态并关闭倒计时
+void gamecontrol::MarkUserLandlordFirstTurnFinished()
+{
+    _UserLandlordFirstTurnActive = false;
+    emit S_StopCountdown();
+}
+
+// 倒计时超时后，自动打出用户当前手牌的第一张牌
+void gamecontrol::AutoPlayFirstCardForUser()
+{
+    // 仅在用户成为地主后的首轮出牌且轮到用户时自动出第一张
+    if(!_UserLandlordFirstTurnActive || !_UserPlayer || _CurrentPlayer != _UserPlayer)
+    {
+        return;
+    }
+
+    Cards userCards = _UserPlayer->GetCards();
+    QListcard sortedCards = userCards.Listcardssort(Cards::ASC);
+    if(sortedCards.isEmpty())
+    {
+        MarkUserLandlordFirstTurnFinished();
+        return;
+    }
+
+    Cards *autoCards = new Cards();
+    autoCards->add(sortedCards.first());
+    _UserPlayer->PlayHand(autoCards);
+}
 
 
