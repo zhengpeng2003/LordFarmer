@@ -7,6 +7,6 @@ RobotPlayhand::RobotPlayhand(player *player,QObject *parent): QThread(parent)
 
 void RobotPlayhand::run()
 {
-    msleep(1000);
+    msleep(1700);
     _Player->RobotThinkPlayhand();
 }

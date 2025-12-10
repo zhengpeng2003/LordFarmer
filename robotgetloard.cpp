@@ -8,6 +8,6 @@ Robotgetloard::Robotgetloard(player * player,QObject * parent)
 
 void Robotgetloard::run()
 {
-    msleep(1000);
+    msleep(1700);
     _Player->RobotGetLard();
 }

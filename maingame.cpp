@@ -346,7 +346,7 @@ void Maingame::SatrtPend()
     }
 
     //开始发牌定时器启动
-    _Timer_PlayHand->start(1);
+    _Timer_PlayHand->start(15);
 }
 
 void Maingame::PlayHandtimer(player * Player,int Movetime)
