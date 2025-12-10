@@ -103,15 +103,16 @@ void Maingame::SaveLastGameScores()
     player* rightRobot = _Gamecontrol->GetRightroot();
     player* userPlayer = _Gamecontrol->GetUSer();
 
-    const int leftScore = leftRobot ? leftRobot->GetScore() : 0;
-    const int rightScore = rightRobot ? rightRobot->GetScore() : 0;
-    const int userScore = userPlayer ? userPlayer->GetScore() : 0;
+    const int leftRoundScore = leftRobot ? leftRobot->GetScore() : 0;
+    const int rightRoundScore = rightRobot ? rightRobot->GetScore() : 0;
+    const int userRoundScore = userPlayer ? userPlayer->GetScore() : 0;
 
-    _LastLeftRobotScore = leftScore;
-    _LastRightRobotScore = rightScore;
-    _LastUserScore = userScore;
+    // 先累加本局结算分，再刷新展示，确保连续多局累计有效
+    _LastLeftRobotScore += leftRoundScore;
+    _LastRightRobotScore += rightRoundScore;
+    _LastUserScore += userRoundScore;
 
-    ui->widget_showscore->InitScore(leftScore, rightScore, userScore);
+    ui->widget_showscore->InitScore(_LastLeftRobotScore, _LastRightRobotScore, _LastUserScore);
 }
 
 void Maingame::ResetCountdown()
