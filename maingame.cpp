@@ -5,6 +5,7 @@
 #include <QMouseEvent>
 #include <QCloseEvent>
 #include <QMessageBox>
+#include <QTimer>
 #include <algorithm>
 
 Maingame::Maingame(QWidget *parent)
@@ -161,6 +162,8 @@ void Maingame::ShowPlayerInfoImage(player *player, const QPixmap &pixmap)
     {
         return;
     }
+
+    _InfoLabelSeq++;
 
     auto ctx = _Playercontexts[player];
     ctx->_NOCardlabel->setPixmap(pixmap);
@@ -469,14 +472,22 @@ void Maingame::SetCurrentGameStatue(gamecontrol::GameState state)
         }
         //把所有的标签隐藏 //设置角色
         _MyAnmation->hide();
-        for(auto ctx : _Playercontexts)
+        const int expectedSeq = _InfoLabelSeq;
+        QTimer::singleShot(1500, this, [this, expectedSeq]()
         {
-            if(ctx && ctx->_NOCardlabel)
+            if(expectedSeq != _InfoLabelSeq)
             {
-                ctx->_NOCardlabel->clear();
-                ctx->_NOCardlabel->hide();
+                return;
             }
-        }
+            for(auto ctx : _Playercontexts)
+            {
+                if(ctx && ctx->_NOCardlabel)
+                {
+                    ctx->_NOCardlabel->clear();
+                    ctx->_NOCardlabel->hide();
+                }
+            }
+        });
         // 停止发牌音效（发牌结束）
         _Bgmcontrol->StopOtherBgm();
         break;
@@ -613,6 +624,7 @@ void Maingame::OndisPosePlayhand(player *player, Cards *cards)
     if(!cards || cards->isempty())
     {
         qDebug() << "玩家要不起";
+        _InfoLabelSeq++;
         QPixmap passPixmap(":/images/pass.png");
         if(passPixmap.isNull())
         {
@@ -727,11 +739,18 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
     default:
     {
         qDebug()<<"游戏结束";
-        //所有牌都展示出来然后清空
-        _Playercontexts.find(player->GetPrePlayer()).value()->Isfront=true;
-        _Playercontexts.find(player->GetNextPlayer()).value()->Isfront=true;
-        PendCardpos(player->GetNextPlayer());
-        PendCardpos(player->GetPrePlayer());
+        // 所有牌正面展示，直至下一局开始前都保持亮牌
+        for(auto ctx : _Playercontexts)
+        {
+            if(ctx)
+            {
+                ctx->Isfront = true;
+            }
+        }
+        for(player* p : _Players)
+        {
+            PendCardpos(p);
+        }
         ResetCountdown();      // ← 加
         InitScore();//初始化分数
         qDebug()<<"分数初始化";
@@ -871,6 +890,8 @@ void Maingame::InitEndPanel(player *player)
             it.value()->_ROlelabel->hide();
             it.value()->Isfront=false;
         }
+
+        _InfoLabelSeq = 0;
 
         _SelcetPanel.clear();
 
@@ -1071,6 +1092,19 @@ void Maingame::ClearSelectedPanels()
     }
     _SelcetPanel.clear();
 }
+
+CardPanel* Maingame::PanelFromPos(const QPoint &pos) const
+{
+    QList<CardPanel*> list = _PanelPositon.keys();
+    for(CardPanel *temp : list)
+    {
+        if(_PanelPositon.value(temp).contains(pos))
+        {
+            return temp;
+        }
+    }
+    return nullptr;
+}
 void Maingame::RePlayGame()
 {
     PlayerStateChange(_Gamecontrol->GetUSer(),gamecontrol::USERGETLORD);
@@ -1214,32 +1248,87 @@ void Maingame::paintEvent(QPaintEvent *event)
 
 void Maingame::mouseMoveEvent(QMouseEvent *event)
 {
-    if(event->buttons()&Qt::LeftButton)
+    if(event->buttons() & Qt::LeftButton)
     {
-        if(!_Mycardsrect.contains(event->pos()))
+        // 只有在用户回合且处于出牌阶段才允许拖拽选牌，避免机器人回合产生音效
+        if(!_CanSelectCards || _CurrentGameState != gamecontrol::GIVECARD ||
+           !_Gamecontrol || _Gamecontrol->GetCurrentPlayer() != _Gamecontrol->GetUSer())
         {
-            _SelcetPanel.clear();
+            return;
         }
-        else
-        {
 
-            QList<CardPanel*>list=_PanelPositon.keys();
-            for(int i=0;i<list.size();i++)
-            {
-                CardPanel *temp=list[i];
-                if(_PanelPositon[temp].contains(event->pos())&&_CurrtPanel!=temp)//如果给定的点位于矩形内部或其边缘上，则返回 true，否则返回 false。如果 proper 为 true，则此函数仅在给定的点位于矩形内部（即不在边缘上）时才返回 true。
-                {
-                    temp->Click();
-                    _CurrtPanel=temp;
-                }
-            }
+        // 放宽手牌区域的判定，轻微滑出不再立即清空选中
+        QRect tolerantRect = _Mycardsrect.adjusted(-10, -10, 10, 10);
+        if(!tolerantRect.contains(event->pos()))
+        {
+            _IsDraggingSelect = false;
+            _CurrtPanel = nullptr;
+            return;
+        }
+
+        if(!_IsDraggingSelect)
+        {
+            _IsDraggingSelect = true;
+            _CurrtPanel = PanelFromPos(event->pos());
+            return;
+        }
+
+        CardPanel *temp = PanelFromPos(event->pos());
+        if(temp && _CurrtPanel != temp)
+        {
+            temp->Click();
+            _CurrtPanel = temp;
         }
     }
-    else if(event->buttons()&Qt::RightButton)
+    else if(event->buttons() & Qt::RightButton)
     {
         UserPlayHand();
     }
 
+}
+
+void Maingame::mousePressEvent(QMouseEvent *event)
+{
+    if(event->button() == Qt::LeftButton)
+    {
+        // 只有在当前轮到用户并且在出牌阶段时才允许开始拖拽选牌
+        if(!_CanSelectCards || _CurrentGameState != gamecontrol::GIVECARD ||
+           !_Gamecontrol || _Gamecontrol->GetCurrentPlayer() != _Gamecontrol->GetUSer())
+        {
+            _IsDraggingSelect = false;
+            return;
+        }
+
+        QRect tolerantRect = _Mycardsrect.adjusted(-10, -10, 10, 10);
+        if(!tolerantRect.contains(event->pos()))
+        {
+            _IsDraggingSelect = false;
+            return;
+        }
+
+        _IsDraggingSelect = true;
+        _CurrtPanel = nullptr;
+
+        CardPanel *temp = PanelFromPos(event->pos());
+        if(temp)
+        {
+            temp->Click();
+            _CurrtPanel = temp;
+        }
+    }
+    else if(event->button() == Qt::RightButton)
+    {
+        UserPlayHand();
+    }
+
+    QMainWindow::mousePressEvent(event);
+}
+
+void Maingame::mouseReleaseEvent(QMouseEvent *event)
+{
+    _IsDraggingSelect = false;
+    _CurrtPanel = nullptr;
+    QMainWindow::mouseReleaseEvent(event);
 }
 
 void Maingame::closeEvent(QCloseEvent *event)
