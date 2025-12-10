@@ -84,6 +84,7 @@ public:
     void OnLordDetermined(player* lordPlayer);
     void ResetCountdown();
     void ShowPlayerInfoImage(player *player, const QPixmap &pixmap);
+    QPoint CalculateLabelPosAbovePlayArea(_Playercontext* ctx, const QSize &labelSize, int extraOffset = 0) const;
     //清空当前玩家的选中状态
     void ClearSelectedPanels();
     ~Maingame();

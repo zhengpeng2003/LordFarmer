@@ -101,6 +101,21 @@ void Maingame::ResetCountdown()
     _Timecount->hide();
 }
 
+QPoint Maingame::CalculateLabelPosAbovePlayArea(_Playercontext* ctx, const QSize &labelSize, int extraOffset) const
+{
+    if(!ctx)
+    {
+        return QPoint();
+    }
+
+    const QPoint center = ctx->_PlayerHandRect.center();
+    const int targetX = center.x() - labelSize.width() / 2;
+    const int baseOffset = extraOffset >= 0 ? extraOffset : 0;
+    const int targetY = ctx->_PlayerHandRect.top() - labelSize.height() - baseOffset;
+
+    return QPoint(targetX, targetY);
+}
+
 void Maingame::ShowPlayerInfoImage(player *player, const QPixmap &pixmap)
 {
     if(!player || pixmap.isNull() || !_Playercontexts.contains(player))
@@ -112,12 +127,8 @@ void Maingame::ShowPlayerInfoImage(player *player, const QPixmap &pixmap)
     ctx->_NOCardlabel->setPixmap(pixmap);
     ctx->_NOCardlabel->setFixedSize(pixmap.size());
 
-    QPoint center = ctx->_PlayerHandRect.center();
-    const int offsetY = _IMage_Card_Size.height() / 2;
-    const int posX = center.x() - pixmap.width() / 2;
-    const int posY = ctx->_PlayerHandRect.bottom() + offsetY;
-
-    ctx->_NOCardlabel->move(posX, posY);
+    const QPoint targetPos = CalculateLabelPosAbovePlayArea(ctx, pixmap.size(), _IMage_Card_Size.height() / 4);
+    ctx->_NOCardlabel->move(targetPos);
     ctx->_NOCardlabel->raise();
     ctx->_NOCardlabel->show();
 }
@@ -542,6 +553,8 @@ void Maingame::OndisPosePlayhand(player *player, Cards *cards)
             auto noCardLabel = _Playercontexts.find(player).value()->_NOCardlabel;
             noCardLabel->setPixmap(passPixmap);
             noCardLabel->setFixedSize(passPixmap.size());
+            const QPoint targetPos = CalculateLabelPosAbovePlayArea(_Playercontexts.find(player).value(), passPixmap.size(), _IMage_Card_Size.height() / 4);
+            noCardLabel->move(targetPos);
             noCardLabel->raise();
             noCardLabel->show();
         }
@@ -1107,8 +1120,13 @@ void Maingame::OnLordDetermined(player* lordPlayer)
             currentPlayer->GetSex(),
             currentPlayer->GetLocation()
             );
-        _Playercontexts.find(currentPlayer).value()->_ROlelabel->setPixmap(RolePix);
-        _Playercontexts.find(currentPlayer).value()->_ROlelabel->show();
+        auto ctx = _Playercontexts.find(currentPlayer).value();
+        ctx->_ROlelabel->setPixmap(RolePix);
+        ctx->_ROlelabel->setFixedSize(RolePix.size());
+        const QPoint targetPos = CalculateLabelPosAbovePlayArea(ctx, RolePix.size(), _IMage_Card_Size.height() / 4);
+        ctx->_ROlelabel->move(targetPos);
+        ctx->_ROlelabel->raise();
+        ctx->_ROlelabel->show();
 
         qDebug() << "设置玩家角色头像 - 玩家:" << currentPlayer
                  << "角色:" << currentPlayer->GetRole();
