@@ -26,6 +26,7 @@ class Maingame;
 }
 QT_END_NAMESPACE
 // 123456
+//test分支1234564897
 class Maingame : public QMainWindow
 {
     Q_OBJECT
