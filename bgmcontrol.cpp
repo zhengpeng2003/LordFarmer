@@ -402,9 +402,9 @@ void Bgmcontrol::playSoundBySex(player::Sex sex, Sound soundIndex, const QString
 
     int index = static_cast<int>(soundIndex);
     // qDebug() << "尝试播放音效 - 类型:" << logType
-             << "性别:" << (sex == player::Sex::MAN ? "男" : "女")
-             << "索引:" << index
-             << "音效列表大小:" << soundList.size();
+             // << "性别:" << (sex == player::Sex::MAN ? "男" : "女")
+             // << "索引:" << index
+             // << "音效列表大小:" << soundList.size();
 
     if (index >= 0 && index < soundList.size()) {
         QString soundPath = soundList[index];
@@ -415,7 +415,7 @@ void Bgmcontrol::playSoundBySex(player::Sex sex, Sound soundIndex, const QString
         if (file.exists()) {
             // qDebug() << "音效文件存在";
         } else {
-            qWarning() << "音效文件不存在:" << soundPath;
+            //qWarning() << "音效文件不存在:" << soundPath;
         }
 
         player->stop();
@@ -425,7 +425,7 @@ void Bgmcontrol::playSoundBySex(player::Sex sex, Sound soundIndex, const QString
 
 
     } else {
-        qWarning() << "音效索引无效，尝试使用列表首个音效作为兜底" << index;
+        //qWarning() << "音效索引无效，尝试使用列表首个音效作为兜底" << index;
         if(!soundList.isEmpty())
         {
             player->stop();

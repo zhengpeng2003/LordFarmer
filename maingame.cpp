@@ -1401,6 +1401,6 @@ void Maingame::OnLordDetermined(player* lordPlayer)
         ctx->_ROlelabel->show();
 
         // qDebug() << "设置玩家角色头像 - 玩家:" << currentPlayer
-                 << "角色:" << currentPlayer->GetRole();
+                 //<< "角色:" << currentPlayer->GetRole();
     }
 }
