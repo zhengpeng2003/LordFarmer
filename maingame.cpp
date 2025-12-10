@@ -101,6 +101,27 @@ void Maingame::ResetCountdown()
     _Timecount->hide();
 }
 
+// 根据当前出牌玩家刷新倒计时位置，确保时钟贴合对应的出牌区域
+void Maingame::MoveCountdownToPlayer(player *player)
+{
+    if(!_Timecount || !player)
+    {
+        return;
+    }
+
+    auto ctxIt = _Playercontexts.find(player);
+    if(ctxIt == _Playercontexts.end())
+    {
+        return;
+    }
+
+    const QPoint targetPos = CalculateLabelPosAbovePlayArea(ctxIt.value(), _Timecount->size(), _IMage_Card_Size.height() / 4);
+    if(!targetPos.isNull())
+    {
+        _Timecount->move(targetPos);
+    }
+}
+
 QPoint Maingame::CalculateCenteredPos(const QPoint &anchor, const QSize &labelSize) const
 {
     if(anchor.isNull())
@@ -382,7 +403,7 @@ void Maingame::PlayHandtimer(player * Player,int Movetime)
             _Gamecontrol->GetAllCards()->add(card);
         }
 
-        qDebug() << "地主牌已放回牌堆";
+        // qDebug() << "地主牌已放回牌堆";
         SetCurrentGameStatue(gamecontrol::GETLORD);
 
     }
@@ -570,7 +591,7 @@ void Maingame::PendCardpos(player* player) {
 
 void Maingame::OndisPosePlayhand(player *player, Cards *cards)
 {
-    qDebug() << "OndisPosePlayhand - 玩家:" << player << "牌数:" << (cards ? cards->GetCardtotal() : 0);
+    // qDebug() << "OndisPosePlayhand - 玩家:" << player << "牌数:" << (cards ? cards->GetCardtotal() : 0);
 
     // 隐藏上轮玩家出的牌
     HidePlayhand(player);
@@ -581,7 +602,7 @@ void Maingame::OndisPosePlayhand(player *player, Cards *cards)
     // 处理"要不起"的情况
     if(!cards || cards->isempty())
     {
-        qDebug() << "玩家要不起";
+        // qDebug() << "玩家要不起";
         QPixmap passPixmap(":/images/pass.png");
         if(passPixmap.isNull())
         {
@@ -606,7 +627,7 @@ void Maingame::OndisPosePlayhand(player *player, Cards *cards)
         // 正常出牌的动画特效
         PlayHand temp(cards);
         PlayHand::HandType type = temp.Getplayhandtype();
-        qDebug() << "正常出牌，牌型:" << type;
+        // qDebug() << "正常出牌，牌型:" << type;
 
         // 添加出牌音效
         bool isFirst = (_Gamecontrol->GetPendplayer() == nullptr || _Gamecontrol->GetPendplayer() == player);
@@ -677,12 +698,12 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
             // 情况1：没有出牌记录 或 上一轮是自己出的牌
             if(_Gamecontrol->GetPendplayer() == nullptr || _Gamecontrol->GetPendplayer() == player)
             {
-                qDebug() << "切换为自由出牌模式";
+                // qDebug() << "切换为自由出牌模式";
                 ui->widget->Setbtngroupstate(MybuttonGroup::PlayCardfirst);
             }
             else
             {
-                qDebug() << "切换为压牌模式";
+                // qDebug() << "切换为压牌模式";
                 ui->widget->Setbtngroupstate(MybuttonGroup::PlayCard);
             }
         }
@@ -695,7 +716,7 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
 
     default:
     {
-        qDebug()<<"游戏结束";
+        // qDebug()<<"游戏结束";
         //所有牌都展示出来然后清空
         _Playercontexts.find(player->GetPrePlayer()).value()->Isfront=true;
         _Playercontexts.find(player->GetNextPlayer()).value()->Isfront=true;
@@ -703,7 +724,7 @@ void Maingame::PlayerStateChange(player *player, gamecontrol::USERSTATE state)
         PendCardpos(player->GetPrePlayer());
         ResetCountdown();      // ← 加
         InitScore();//初始化分数
-        qDebug()<<"分数初始化";
+        // qDebug()<<"分数初始化";
 
         // 添加结束音效
         InitEndPanel(_Gamecontrol->GetUSer());
@@ -739,7 +760,7 @@ void Maingame::gamenotifyGetLoard(player *player, int Bet, bool first)
     ui->widget->Setbtngroupstate(MybuttonGroup::Null);
 
     // 确保音效播放 - 添加调试信息
-    qDebug() << "抢地主音效 - 玩家:" << player << "下注:" << Bet << "是否首家:" << first;
+    // qDebug() << "抢地主音效 - 玩家:" << player << "下注:" << Bet << "是否首家:" << first;
     _Bgmcontrol->GetlordBgm(Bet, player->GetSex(), first);
 }
 
@@ -843,6 +864,7 @@ void Maingame::InitEndPanel(player *player)
         it.value()->hide();
     }
 }
+// 玩家点击出牌按钮后触发的流程，负责校验牌型与状态并真正出牌
 void Maingame::UserPlayHand()
 {
     //判断当前游戏状态
@@ -876,7 +898,7 @@ void Maingame::UserPlayHand()
         }
     }
 
-    qDebug() << "=== 玩家出牌验证 ===";
+    // qDebug() << "=== 玩家出牌验证 ===";
     //闹钟关闭 钟表隐藏
     ResetCountdown();          // ← 加这一行
     //判断打出的牌合不合理
@@ -889,21 +911,21 @@ void Maingame::UserPlayHand()
 
     PlayHand playHand(temp);
     PlayHand::HandType type = playHand.Getplayhandtype();
-    qDebug() << "牌型识别:" << type;
+    // qDebug() << "牌型识别:" << type;
 
     // 使用修复后的判断逻辑
     player* lastPlayer = _Gamecontrol->GetPendplayer();
     player* currentPlayer = _Gamecontrol->GetCurrentPlayer();
 
-    qDebug() << "上一个出牌者:" << lastPlayer;
-    qDebug() << "当前玩家:" << currentPlayer;
+    // qDebug() << "上一个出牌者:" << lastPlayer;
+    // qDebug() << "当前玩家:" << currentPlayer;
 
     // 情况1：首家出牌或自由出牌（上一轮也是自己出的牌）
     if(lastPlayer == nullptr || lastPlayer == currentPlayer)
     {
-        qDebug() << "自由出牌模式";
+        // qDebug() << "自由出牌模式";
         if(type == PlayHand::Hand_Unknown) {
-            qDebug() << "牌型无效";
+            // qDebug() << "牌型无效";
             delete temp;
             return;
         }
@@ -911,24 +933,24 @@ void Maingame::UserPlayHand()
     // 情况2：需要压其他玩家的牌
     else
     {
-        qDebug() << "压牌模式";
+        // qDebug() << "压牌模式";
         Cards* lastCards = _Gamecontrol->GetCurrentCards();
-        qDebug() << "上家出牌数量:" << (lastCards ? lastCards->GetCardtotal() : 0);
+        // qDebug() << "上家出牌数量:" << (lastCards ? lastCards->GetCardtotal() : 0);
 
         if(lastCards) {
             PlayHand lastPlayHand(lastCards);
             bool canBeat = playHand.CanBeat(lastPlayHand);
-            qDebug() << "能否压住上家:" << canBeat;
+            // qDebug() << "能否压住上家:" << canBeat;
 
             if(!canBeat) {
-                qDebug() << "不能压住上家的牌";
+                // qDebug() << "不能压住上家的牌";
                 delete temp;
                 return;
             }
         }
     }
 
-    qDebug() << "出牌有效，开始处理";
+    // qDebug() << "出牌有效，开始处理";
 
 
     //触发出牌
@@ -939,32 +961,33 @@ void Maingame::UserPlayHand()
     PendCardpos(_Gamecontrol->GetUSer()); // 立即刷新手牌显示
 }
 
+// 玩家明确选择“要不起”时的处理逻辑，通知游戏控制层并刷新界面
 void Maingame::UserNoPlayer()
 {
-    qDebug() << "=== 玩家要不起 ===";
+    // qDebug() << "=== 玩家要不起 ===";
 
     // 判断当前玩家
     if(_Gamecontrol->GetCurrentPlayer() != _Gamecontrol->GetUSer())
     {
-        qDebug() << "不是当前玩家回合";
+        // qDebug() << "不是当前玩家回合";
         return;
     }
 
     // 安全检查：不能首家要不起
     if(_Gamecontrol->GetPendplayer() == nullptr)
     {
-        qDebug() << "首家不能要不起";
+        // qDebug() << "首家不能要不起";
         return;
     }
 
     // 安全检查：不能连续要不起
     if(_Gamecontrol->GetPendplayer() == _Gamecontrol->GetUSer())
     {
-        qDebug() << "不能连续要不起";
+        // qDebug() << "不能连续要不起";
         return;
     }
 
-    qDebug() << "玩家选择要不起";
+    // qDebug() << "玩家选择要不起";
 
     // 清空所有选中的牌
     ClearSelectedPanels();
@@ -981,27 +1004,29 @@ void Maingame::UserNoPlayer()
     // 更新手牌显示
     PendCardpos(_Gamecontrol->GetUSer());
 
-    qDebug() << "=== 要不起处理完成 ===";
+    // qDebug() << "=== 要不起处理完成 ===";
     ui->widget->Setbtngroupstate(MybuttonGroup::Null);
 }
 
+// 倒计时结束或需要强制出牌时统一自动打出手牌第一张
 void Maingame::AutoPlayFirstCard()
 {
-    if(_Gamecontrol->GetCurrentPlayer() != _Gamecontrol->GetUSer())
+    player *user = _Gamecontrol->GetUSer();
+    if(_Gamecontrol->GetCurrentPlayer() != user)
     {
         return;
     }
 
-    Cards userCards = _Gamecontrol->GetUSer()->GetCards();
+    Cards userCards = user->GetCards();
     QListcard list = userCards.Listcardssort();
 
     if(list.isEmpty())
     {
-        qDebug() << "自动出牌失败：手牌为空";
+        // qDebug() << "自动出牌失败：手牌为空";
         return;
     }
 
-    qDebug() << "自由出牌超时，自动打出第一张牌";
+    // qDebug() << "倒计时超时，自动打出第一张牌";
 
     Cards *autoCards = new Cards();
     autoCards->add(list.first());
@@ -1009,7 +1034,7 @@ void Maingame::AutoPlayFirstCard()
     _Gamecontrol->GetCurrentPlayer()->PlayHand(autoCards);
 
     ClearSelectedPanels();
-    PendCardpos(_Gamecontrol->GetUSer());
+    PendCardpos(user);
 }
 
 void Maingame::ClearSelectedPanels()
@@ -1029,6 +1054,7 @@ void Maingame::RePlayGame()
 
 }
 
+// 初始化出牌倒计时，统一处理超时自动出牌与提示音效
 void Maingame::InitPlayerTimer()
 {
 
@@ -1036,16 +1062,20 @@ void Maingame::InitPlayerTimer()
     _Timecount->move((width()-_Timecount->width())/2,(height()-_Timecount->height())/2+100);
     //时间到了
     connect(_Timecount,&Timecount::S_TimeOUt,this,[=](){
-        if(_Gamecontrol->GetCurrentPlayer() != _Gamecontrol->GetUSer())
+        player *currentPlayer = _Gamecontrol->GetCurrentPlayer();
+        player *user = _Gamecontrol->GetUSer();
+        if(currentPlayer != user)
         {
             ResetCountdown();
             return;
         }
 
         const bool isFreePlay = (_Gamecontrol->GetPendplayer() == nullptr ||
-                                 _Gamecontrol->GetPendplayer() == _Gamecontrol->GetCurrentPlayer());
+                                 _Gamecontrol->GetPendplayer() == currentPlayer);
+        const bool isUserLord = (user && user->GetRole() == player::LORD);
 
-        if(isFreePlay)
+        // 地主与自由出牌场景统一走自动出牌逻辑，其余情况保持要不起
+        if(isUserLord || isFreePlay)
         {
             AutoPlayFirstCard();
         }
@@ -1071,8 +1101,9 @@ void Maingame::InitPlayerTimer()
 
         if(_Gamecontrol->GetUSer()==_Gamecontrol->GetCurrentPlayer())
         {
-            qDebug()<<"触发信号";
+            // qDebug()<<"触发信号";
             ResetCountdown();
+            MoveCountdownToPlayer(_Gamecontrol->GetCurrentPlayer());
             _Timecount->Start();
             _Timecount->show();
 
@@ -1208,9 +1239,10 @@ void Maingame::closeEvent(QCloseEvent *event)
         event->ignore();
     }
 }
+// 地主确定后刷新所有玩家的头像展示
 void Maingame::OnLordDetermined(player* lordPlayer)
 {
-    qDebug() << "地主确定:" << lordPlayer;
+    // qDebug() << "地主确定:" << lordPlayer;
 
     // 更新所有玩家的角色头像
     for(int i = 0; i < 3; i++)
@@ -1229,7 +1261,7 @@ void Maingame::OnLordDetermined(player* lordPlayer)
         ctx->_ROlelabel->raise();
         ctx->_ROlelabel->show();
 
-        qDebug() << "设置玩家角色头像 - 玩家:" << currentPlayer
+        // qDebug() << "设置玩家角色头像 - 玩家:" << currentPlayer
                  << "角色:" << currentPlayer->GetRole();
     }
 }

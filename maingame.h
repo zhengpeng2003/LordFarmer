@@ -98,7 +98,7 @@ public:
     void UserPlayHand();
     //玩家要不起
     void UserNoPlayer();
-    // 自由出牌超时自动打出第一张牌
+    // 统一的自动出牌入口（自由出牌/地主超时自动打出首张牌）
     void AutoPlayFirstCard();
     //重新游戏
     void RePlayGame();
@@ -115,6 +115,8 @@ public:
     QPoint CalculateCenteredPos(const QPoint &anchor, const QSize &labelSize) const;
     //清空当前玩家的选中状态
     void ClearSelectedPanels();
+    // 根据当前出牌玩家调整倒计时位置
+    void MoveCountdownToPlayer(player *player);
     ~Maingame();
 protected:
     virtual void paintEvent(QPaintEvent *event)override;

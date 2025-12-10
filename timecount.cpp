@@ -31,17 +31,20 @@ Timecount::Timecount(QWidget *parent)
 
 void Timecount::Start(int seconds)
 {
+    // 启动倒计时并记录剩余秒数
     _Timer->start(1000);
     count = seconds;
 }
 
 void Timecount::Stop()
 {
+    // 主动停止计时，通常在玩家已出牌时调用
     _Timer->stop();
 }
 
 void Timecount::Reset()
 {
+    // 复位计时器，清空显示
     Stop();
     _BgPix = QPixmap();
     _Number = QPixmap();
@@ -56,6 +59,7 @@ void Timecount::Timestart()
 
 void Timecount::Timeout()
 {
+    // 兼容旧接口的超时处理
     Reset();
 }
 
